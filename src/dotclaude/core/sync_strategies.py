@@ -49,6 +49,58 @@ class SyncStrategy(ABC):
             item_name, operation, True, f"Would {description}"
         )
 
+    def _execute_file_operation(
+        self,
+        item_name: str,
+        source_path: Path,
+        dest_path: Path,
+        is_dir: bool,
+        operation_type: str,
+        options: SyncOptions
+    ) -> OperationResult:
+        """Execute a file operation (create or update) with unified logic."""
+        from dotclaude.core.sync_utils import SyncFileOperations
+
+        file_ops = SyncFileOperations()
+
+        if not dest_path.exists():
+            # Create operation
+            if options.dry_run:
+                return self._handle_dry_run_operation(item_name, "create", f"create {operation_type}")
+
+            console.print(f"[success]Creating {operation_type}: {item_name}[/success]")
+            file_ops.copy_path(source_path, dest_path, is_dir)
+            return self._create_operation_result(
+                item_name, "create", True, f"Created {operation_type} successfully"
+            )
+        elif not file_ops.paths_identical(source_path, dest_path, is_dir):
+            # Update operation
+            if options.dry_run:
+                return self._handle_dry_run_operation(item_name, "update", f"update {operation_type}")
+
+            if options.force or self._prompt_overwrite(f"{item_name} {operation_type}"):
+                console.print(f"[success]Updating {operation_type}: {item_name}[/success]")
+                file_ops.remove_path(dest_path, is_dir)
+                file_ops.copy_path(source_path, dest_path, is_dir)
+                return self._create_operation_result(
+                    item_name, "update", True, f"Updated {operation_type} successfully"
+                )
+            else:
+                console.print(f"[info]Skipping: {item_name}[/info]")
+                return self._create_operation_result(
+                    item_name, "skip", True, "Skipped by user choice"
+                )
+
+        # No changes needed
+        return self._create_operation_result(
+            item_name, "skip", True, "No changes needed"
+        )
+
+    def _prompt_overwrite(self, item_name: str) -> bool:
+        """Prompt user for overwrite confirmation."""
+        # For now, just return True (will implement interactive prompts later)
+        return True
+
 
 class PullSyncStrategy(SyncStrategy):
     """Strategy for pull-only synchronization."""
@@ -71,55 +123,16 @@ class PullSyncStrategy(SyncStrategy):
         self, working_dir: Path, item_name: str, item_type: str, options: SyncOptions
     ) -> OperationResult:
         """Process a single item for pull operation."""
-        from dotclaude.core.sync_utils import SyncFileOperations
-
         remote_path = working_dir / item_name
         local_path = self.claude_dir / item_name
 
         if not remote_path.exists():
             return self._handle_missing_item(item_name, "in repository")
 
-        file_ops = SyncFileOperations()
         is_dir = item_type == "dir"
-
-        if options.dry_run:
-            if not local_path.exists():
-                return self._handle_dry_run_operation(item_name, "create", "create")
-            elif not file_ops.paths_identical(local_path, remote_path, is_dir):
-                return self._handle_dry_run_operation(item_name, "update", "update")
-            return self._create_operation_result(
-                item_name, "skip", True, "No changes needed"
-            )
-
-        # Actual sync
-        if not local_path.exists():
-            console.print(f"[success]Creating: {item_name}[/success]")
-            file_ops.copy_path(remote_path, local_path, is_dir)
-            return self._create_operation_result(
-                item_name, "create", True, "Created successfully"
-            )
-        elif not file_ops.paths_identical(local_path, remote_path, is_dir):
-            if options.force or self._prompt_overwrite(item_name):
-                console.print(f"[success]Updating: {item_name}[/success]")
-                file_ops.remove_path(local_path, is_dir)
-                file_ops.copy_path(remote_path, local_path, is_dir)
-                return self._create_operation_result(
-                    item_name, "update", True, "Updated successfully"
-                )
-            else:
-                console.print(f"[info]Skipping: {item_name}[/info]")
-                return self._create_operation_result(
-                    item_name, "skip", True, "Skipped by user choice"
-                )
-
-        return self._create_operation_result(
-            item_name, "skip", True, "No changes needed"
+        return self._execute_file_operation(
+            item_name, remote_path, local_path, is_dir, "locally", options
         )
-
-    def _prompt_overwrite(self, item_name: str) -> bool:
-        """Prompt user for overwrite confirmation."""
-        # For now, just return True (will implement interactive prompts later)
-        return True
 
 
 class PushSyncStrategy(SyncStrategy):
@@ -154,59 +167,16 @@ class PushSyncStrategy(SyncStrategy):
         self, working_dir: Path, item_name: str, item_type: str, options: SyncOptions
     ) -> OperationResult:
         """Process a single item for push operation."""
-        from dotclaude.core.sync_utils import SyncFileOperations
-
         local_path = self.claude_dir / item_name
         remote_path = working_dir / item_name
 
         if not local_path.exists():
             return self._handle_missing_item(item_name, "locally")
 
-        file_ops = SyncFileOperations()
         is_dir = item_type == "dir"
-
-        if options.dry_run:
-            if not remote_path.exists():
-                return self._handle_dry_run_operation(
-                    item_name, "create", "create in repo"
-                )
-            elif not file_ops.paths_identical(local_path, remote_path, is_dir):
-                return self._handle_dry_run_operation(
-                    item_name, "update", "update in repo"
-                )
-            return self._create_operation_result(
-                item_name, "skip", True, "No changes needed"
-            )
-
-        # Actual sync
-        if not remote_path.exists():
-            console.print(f"[success]Creating in repo: {item_name}[/success]")
-            file_ops.copy_path(local_path, remote_path, is_dir)
-            return self._create_operation_result(
-                item_name, "create", True, "Created in repo successfully"
-            )
-        elif not file_ops.paths_identical(local_path, remote_path, is_dir):
-            if options.force or self._prompt_overwrite(f"{item_name} in repo"):
-                console.print(f"[success]Updating in repo: {item_name}[/success]")
-                file_ops.remove_path(remote_path, is_dir)
-                file_ops.copy_path(local_path, remote_path, is_dir)
-                return self._create_operation_result(
-                    item_name, "update", True, "Updated in repo successfully"
-                )
-            else:
-                console.print(f"[info]Skipping: {item_name}[/info]")
-                return self._create_operation_result(
-                    item_name, "skip", True, "Skipped by user choice"
-                )
-
-        return self._create_operation_result(
-            item_name, "skip", True, "No changes needed"
+        return self._execute_file_operation(
+            item_name, local_path, remote_path, is_dir, "in repo", options
         )
-
-    def _prompt_overwrite(self, item_name: str) -> bool:
-        """Prompt user for overwrite confirmation."""
-        # For now, just return True (will implement interactive prompts later)
-        return True
 
 
 class BidirectionalSyncStrategy(SyncStrategy):
