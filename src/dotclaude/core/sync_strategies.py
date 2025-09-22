@@ -390,15 +390,15 @@ class BidirectionalSyncStrategy(SyncStrategy):
 
     def _display_conflict_info(self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool) -> None:
         """Display conflict information to the user."""
-        console.print(f"\n[bold yellow]⚠️ Conflict detected for: {item_name}[/bold yellow]")
+        console.print(f"\n[bold yellow]WARNING: Conflict detected for: {item_name}[/bold yellow]")
         console.print("Both local and remote versions exist and are different.")
 
         if is_dir:
-            console.print(f"📁 Local directory: {local_path}")
-            console.print(f"📁 Remote directory: {remote_path}")
+            console.print(f"Local directory: {local_path}")
+            console.print(f"Remote directory: {remote_path}")
         else:
-            console.print(f"📄 Local file: {local_path}")
-            console.print(f"📄 Remote file: {remote_path}")
+            console.print(f"Local file: {local_path}")
+            console.print(f"Remote file: {remote_path}")
 
     def _prompt_user_choice(self, item_name: str) -> int:
         """Prompt user for conflict resolution choice."""
@@ -434,20 +434,20 @@ class BidirectionalSyncStrategy(SyncStrategy):
     ) -> str:
         """Execute the chosen conflict resolution action."""
         if choice_index == -1:  # Interrupted
-            console.print(f"\n[yellow]⏭️ Interrupted. Skipping {item_name}[/yellow]")
+            console.print(f"\n[yellow]Interrupted. Skipping {item_name}[/yellow]")
             return "skip"
         elif choice_index == 0:  # Use Local
-            console.print(f"[green]✅ Using local version of {item_name}[/green]")
+            console.print(f"[green]Using local version of {item_name}[/green]")
             file_ops.remove_path(remote_path, is_dir)
             file_ops.copy_path(local_path, remote_path, is_dir)
             return "local"
         elif choice_index == 1:  # Use Remote
-            console.print(f"[blue]✅ Using remote version of {item_name}[/blue]")
+            console.print(f"[blue]Using remote version of {item_name}[/blue]")
             file_ops.remove_path(local_path, is_dir)
             file_ops.copy_path(remote_path, local_path, is_dir)
             return "remote"
         else:  # Skip
-            console.print(f"[yellow]⏭️ Skipping {item_name}[/yellow]")
+            console.print(f"[yellow]Skipping {item_name}[/yellow]")
             return "skip"
 
     def _resolve_conflict_interactive(

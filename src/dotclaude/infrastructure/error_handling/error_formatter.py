@@ -60,7 +60,7 @@ class ErrorFormatter:
 
         # Show suggestion if available
         if suggestion:
-            self._console.print(f"💡 Suggestion: {suggestion}", style="cyan")
+            self._console.print(f"Suggestion: {suggestion}", style="cyan")
 
         # Show details if available
         if error.details:
@@ -86,7 +86,7 @@ class ErrorFormatter:
         # Provide generic suggestions for common system errors
         suggestion = self._get_system_error_suggestion(error)
         if suggestion:
-            self._console.print(f"💡 Suggestion: {suggestion}", style="cyan")
+            self._console.print(f"Suggestion: {suggestion}", style="cyan")
 
     def _get_error_title(self, error: DotClaudeError) -> str:
         """Get a user-friendly title for the error type."""

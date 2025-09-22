@@ -251,24 +251,24 @@ def status(
 
             # Determine status based on operation
             if operation.operation == "skip":
-                local_status = "✅ Present"
-                remote_status = "✅ Present"
-                sync_status = "[green]✅ In sync[/green]"
+                local_status = "Present"
+                remote_status = "Present"
+                sync_status = "[green]In sync[/green]"
             elif operation.operation == "resolve_conflict":
-                local_status = "📝 Modified"
-                remote_status = "📝 Modified"
-                sync_status = "[yellow]⚠️ Conflict[/yellow]"
+                local_status = "Modified"
+                remote_status = "Modified"
+                sync_status = "[yellow]Conflict[/yellow]"
             elif operation.operation == "copy_to_repo":
-                local_status = "✅ Present"
-                remote_status = "❌ Missing"
-                sync_status = "[red]⬆️ Needs push[/red]"
+                local_status = "Present"
+                remote_status = "Missing"
+                sync_status = "[red]Needs push[/red]"
             elif operation.operation == "copy_to_local":
-                local_status = "❌ Missing"
-                remote_status = "✅ Present"
-                sync_status = "[red]⬇️ Needs pull[/red]"
+                local_status = "Missing"
+                remote_status = "Present"
+                sync_status = "[red]Needs pull[/red]"
             else:
-                local_status = "❓ Unknown"
-                remote_status = "❓ Unknown"
+                local_status = "Unknown"
+                remote_status = "Unknown"
                 sync_status = f"[dim]{operation.operation}[/dim]"
 
             table.add_row(item_name, local_status, remote_status, sync_status)
