@@ -15,6 +15,25 @@ from ...interfaces.services import ConsoleService
 class ErrorRecovery:
     """Provides automatic recovery mechanisms for common errors."""
 
+    # File permission constants
+    FILE_READ_PERMISSIONS = 0o644
+    FILE_WRITE_PERMISSIONS = 0o644
+    DIR_PERMISSIONS = 0o755
+
+    # Network retry configuration
+    RETRY_DELAY_SECONDS = 2
+
+    # Network error indicators
+    NETWORK_ERROR_INDICATORS = [
+        "connection",
+        "timeout",
+        "network",
+        "dns",
+        "host",
+        "unreachable",
+        "refused",
+    ]
+
     def __init__(self, console_service: ConsoleService) -> None:
         """Initialize error recovery.
 
@@ -103,51 +122,51 @@ class ErrorRecovery:
 
         resource_path = Path(resource)
 
-        # For read operations, suggest checking file permissions
         if operation == "read":
-            if self._console.confirm(f"Try to fix read permissions for {resource}?"):
-                try:
-                    # Make file readable by owner
-                    os.chmod(resource_path, 0o644)
-                    self._console.print_success(
-                        f"Fixed read permissions for {resource}"
-                    )
-                    return True
-                except Exception:
-                    self._console.print_error(
-                        "Failed to fix permissions (try running with sudo)"
-                    )
-
-        # For write operations, suggest creating directory or fixing permissions
+            return self._try_fix_read_permissions(resource_path)
         elif operation == "write":
-            if not resource_path.parent.exists():
-                if self._console.confirm(
-                    f"Create missing directory {resource_path.parent}?"
-                ):
-                    try:
-                        resource_path.parent.mkdir(parents=True, exist_ok=True)
-                        self._console.print_success(
-                            f"Created directory: {resource_path.parent}"
-                        )
-                        return True
-                    except Exception:
-                        pass
+            return self._try_fix_write_permissions(resource_path)
 
-            if self._console.confirm(f"Try to fix write permissions for {resource}?"):
+        return False
+
+    def _try_fix_read_permissions(self, resource_path: Path) -> bool:
+        """Attempt to fix read permissions for a resource."""
+        if self._console.confirm(f"Try to fix read permissions for {resource_path}?"):
+            try:
+                os.chmod(resource_path, self.FILE_READ_PERMISSIONS)
+                self._console.print_success(f"Fixed read permissions for {resource_path}")
+                return True
+            except Exception:
+                self._console.print_error("Failed to fix permissions (try running with sudo)")
+        return False
+
+    def _try_fix_write_permissions(self, resource_path: Path) -> bool:
+        """Attempt to fix write permissions for a resource."""
+        # First try to create missing directory if needed
+        if self._try_create_missing_directory(resource_path):
+            return True
+
+        # Then try to fix permissions
+        if self._console.confirm(f"Try to fix write permissions for {resource_path}?"):
+            try:
+                permissions = self.DIR_PERMISSIONS if resource_path.is_dir() else self.FILE_WRITE_PERMISSIONS
+                os.chmod(resource_path, permissions)
+                self._console.print_success(f"Fixed write permissions for {resource_path}")
+                return True
+            except Exception:
+                self._console.print_error("Failed to fix permissions (try running with sudo)")
+        return False
+
+    def _try_create_missing_directory(self, resource_path: Path) -> bool:
+        """Try to create missing parent directory."""
+        if not resource_path.parent.exists():
+            if self._console.confirm(f"Create missing directory {resource_path.parent}?"):
                 try:
-                    if resource_path.is_dir():
-                        os.chmod(resource_path, 0o755)
-                    else:
-                        os.chmod(resource_path, 0o644)
-                    self._console.print_success(
-                        f"Fixed write permissions for {resource}"
-                    )
+                    resource_path.parent.mkdir(parents=True, exist_ok=True)
+                    self._console.print_success(f"Created directory: {resource_path.parent}")
                     return True
                 except Exception:
-                    self._console.print_error(
-                        "Failed to fix permissions (try running with sudo)"
-                    )
-
+                    pass
         return False
 
     def _recover_git_operation(self, error: GitOperationError) -> bool:
@@ -228,8 +247,8 @@ class ErrorRecovery:
         """Attempt to recover from network errors."""
         if self._console.confirm("Network error detected. Retry operation?"):
             # Wait a moment before suggesting retry
-            self._console.print("Waiting 2 seconds before retry...")
-            time.sleep(2)
+            self._console.print(f"Waiting {self.RETRY_DELAY_SECONDS} seconds before retry...")
+            time.sleep(self.RETRY_DELAY_SECONDS)
             return False  # Cannot actually retry here, but indicate retry is possible
 
         return False
@@ -237,17 +256,7 @@ class ErrorRecovery:
     def _is_network_error(self, exception: Exception) -> bool:
         """Check if an exception is network-related."""
         error_message = str(exception).lower()
-        network_indicators = [
-            "connection",
-            "timeout",
-            "network",
-            "dns",
-            "host",
-            "unreachable",
-            "refused",
-        ]
-
-        return any(indicator in error_message for indicator in network_indicators)
+        return any(indicator in error_message for indicator in self.NETWORK_ERROR_INDICATORS)
 
     def _get_default_config_values(self) -> dict[str, str]:
         """Get default configuration values for common settings."""
