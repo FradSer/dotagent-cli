@@ -185,9 +185,13 @@ class PushSyncStrategy(SyncStrategy):
 
         # Commit and push changes if there are any
         if changes_made > 0 and not options.dry_run:
-            self.git_manager.stage_all_changes()
-            self.git_manager.create_commit(Git.COMMIT_MESSAGES["sync"])
-            self.git_manager.push_changes(options.branch)
+            try:
+                self.git_manager.stage_all_changes()
+                self.git_manager.create_commit(Git.COMMIT_MESSAGES["sync"])
+                self.git_manager.push_changes(options.branch)
+            except Exception as e:
+                console.print(f"[warning]Git operations failed: {e}[/warning]")
+                console.print("[info]Local changes have been made but not pushed to remote[/info]")
 
         return operations
 
@@ -235,9 +239,13 @@ class BidirectionalSyncStrategy(SyncStrategy):
 
         # Commit and push if there are changes
         if changes_made > 0 and not options.dry_run:
-            self.git_manager.stage_all_changes()
-            self.git_manager.create_commit(Git.COMMIT_MESSAGES["bidirectional"])
-            self.git_manager.push_changes(options.branch)
+            try:
+                self.git_manager.stage_all_changes()
+                self.git_manager.create_commit(Git.COMMIT_MESSAGES["bidirectional"])
+                self.git_manager.push_changes(options.branch)
+            except Exception as e:
+                console.print(f"[warning]Git operations failed: {e}[/warning]")
+                console.print("[info]Local changes have been made but not pushed to remote[/info]")
 
         return operations
 

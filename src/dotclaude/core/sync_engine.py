@@ -53,23 +53,26 @@ class SyncEngine:
                 operation_type, strategy = strategy_factory.create_strategy(options)
 
                 # Execute the strategy
+                progress.update(task, description="Executing sync strategy...")
                 operations = strategy.execute(working_dir, options)
+                progress.update(task, description="Sync completed", completed=True)
 
-                end_time = datetime.now()
+            # Operations completed, outside progress context
+            end_time = datetime.now()
 
-                result = SyncResult.create_success(
-                    operation_type=operation_type,
-                    start_time=start_time,
-                    end_time=end_time,
-                    operations=operations,
-                    branch=options.branch,
-                    dry_run=options.dry_run,
-                )
+            result = SyncResult.create_success(
+                operation_type=operation_type,
+                start_time=start_time,
+                end_time=end_time,
+                operations=operations,
+                branch=options.branch,
+                dry_run=options.dry_run,
+            )
 
-                # Cleanup
-                context_manager.cleanup_context(working_dir)
+            # Cleanup
+            context_manager.cleanup_context(working_dir)
 
-                return result
+            return result
 
         except Exception as e:
             end_time = datetime.now()
