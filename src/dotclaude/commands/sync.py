@@ -205,23 +205,82 @@ def sync_default(
 
 
 @app.command()
-def status() -> None:
+def status(
+    branch: Optional[str] = typer.Option(None, "--branch", help="Use specific branch"),
+    develop: bool = typer.Option(
+        False,
+        "--develop",
+        "-d",
+        help="Use develop branch (shortcut for --branch develop)",
+    ),
+    repo_url: Optional[str] = typer.Option(
+        None,
+        "--repo-url",
+        "--repo",
+        help="Repository URL (supports HTTPS, SSH, or user/repo format)",
+    ),
+) -> None:
     """Show sync status and differences."""
-    console.print("[bold blue]Checking sync status...[/bold blue]")
+    # Determine target branch using helper function
+    fixed_dry_run, fixed_force, fixed_develop = _fix_typer_parameters(False, False, develop)
+    target_branch = _determine_target_branch(fixed_develop, branch)
 
-    # TODO: Implement status checking
-    table = Table(title="Sync Status", show_header=True, header_style="bold magenta")
+    console.print(f"[bold blue]Checking sync status against {target_branch} branch...[/bold blue]")
+
+    options = _create_sync_options(
+        dry_run=True,  # Always dry run for status
+        force=False,
+        develop=develop,
+        branch=branch,
+        repo_url=repo_url
+    )
+
+    engine = SyncEngine()
+    result = engine.sync(options)
+
+    # Create a status table
+    table = Table(title=f"Sync Status - {target_branch} branch", show_header=True, header_style="bold magenta")
     table.add_column("Item", style="cyan", no_wrap=True)
-    table.add_column("Local", style="green")
-    table.add_column("Remote", style="yellow")
-    table.add_column("Status", style="red")
+    table.add_column("Local Status", style="green")
+    table.add_column("Remote Status", style="yellow")
+    table.add_column("Sync Status", style="white")
 
-    # Placeholder data
-    table.add_row("agents/", "5 files", "5 files", "In sync")
-    table.add_row("commands/", "18 files", "18 files", "In sync")
-    table.add_row("CLAUDE.md", "Modified", "Original", "Needs sync")
+    if hasattr(result, 'operations') and result.operations:
+        for operation in result.operations:
+            item_name = operation.item_name if hasattr(operation, 'item_name') else "Unknown"
+
+            # Determine status based on operation
+            if operation.operation == "skip":
+                local_status = "✅ Present"
+                remote_status = "✅ Present"
+                sync_status = "[green]✅ In sync[/green]"
+            elif operation.operation == "resolve_conflict":
+                local_status = "📝 Modified"
+                remote_status = "📝 Modified"
+                sync_status = "[yellow]⚠️ Conflict[/yellow]"
+            elif operation.operation == "copy_to_repo":
+                local_status = "✅ Present"
+                remote_status = "❌ Missing"
+                sync_status = "[red]⬆️ Needs push[/red]"
+            elif operation.operation == "copy_to_local":
+                local_status = "❌ Missing"
+                remote_status = "✅ Present"
+                sync_status = "[red]⬇️ Needs pull[/red]"
+            else:
+                local_status = "❓ Unknown"
+                remote_status = "❓ Unknown"
+                sync_status = f"[dim]{operation.operation}[/dim]"
+
+            table.add_row(item_name, local_status, remote_status, sync_status)
+    else:
+        # Fallback if no operations data
+        table.add_row("No items found", "N/A", "N/A", "[dim]Check repository configuration[/dim]")
 
     console.print(table)
+
+    # Show summary
+    if hasattr(result, 'operations') and result.operations:
+        _display_operation_summary(result)
 
 
 @app.command()
