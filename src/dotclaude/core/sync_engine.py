@@ -51,11 +51,10 @@ class SyncEngine:
                     self.git_manager, self.sync_items, self.claude_dir
                 )
                 operation_type, strategy = strategy_factory.create_strategy(options)
+                progress.update(task, description="Strategy initialized", completed=True)
 
-                # Execute the strategy
-                progress.update(task, description="Executing sync strategy...")
-                operations = strategy.execute(working_dir, options)
-                progress.update(task, description="Sync completed", completed=True)
+            # Execute the strategy outside progress context for interactive prompts
+            operations = strategy.execute(working_dir, options)
 
             # Operations completed, outside progress context
             end_time = datetime.now()

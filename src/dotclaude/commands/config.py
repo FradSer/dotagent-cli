@@ -31,8 +31,8 @@ def get(
     scope: Optional[str] = typer.Option(
         None, "--scope", help="Configuration scope: local, global, system"
     ),
-    manager: ConfigManager = None,
-    scope_enum: Optional[ConfigScope] = None,
+    manager = None,
+    scope_enum = None,
 ) -> None:
     """Get configuration value."""
     value = manager.get(key, scope=scope_enum) if scope_enum else manager.get(key)
@@ -54,8 +54,8 @@ def set(
     scope: str = typer.Option(
         "global", "--scope", help="Configuration scope: local, global, system"
     ),
-    manager: ConfigManager = None,
-    scope_enum: ConfigScope = None,
+    manager = None,
+    scope_enum = None,
 ) -> None:
     """Set configuration value."""
     manager.set(key, value, scope=scope_enum)
@@ -71,8 +71,8 @@ def unset(
     scope: str = typer.Option(
         "global", "--scope", help="Configuration scope: local, global, system"
     ),
-    manager: ConfigManager = None,
-    scope_enum: ConfigScope = None,
+    manager = None,
+    scope_enum = None,
 ) -> None:
     """Remove configuration value."""
     manager.unset(key, scope=scope_enum)

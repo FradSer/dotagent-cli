@@ -389,7 +389,9 @@ class BidirectionalSyncStrategy(SyncStrategy):
     def _resolve_conflict_interactive(
         self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
     ) -> str:
-        """Resolve conflict interactively."""
+        """Resolve conflict interactively with arrow key support."""
+        import inquirer
+
         console.print(f"\n[bold yellow]⚠️ Conflict detected for: {item_name}[/bold yellow]")
         console.print(f"Both local and remote versions exist and are different.")
 
@@ -400,30 +402,43 @@ class BidirectionalSyncStrategy(SyncStrategy):
             console.print(f"📄 Local file: {local_path}")
             console.print(f"📄 Remote file: {remote_path}")
 
-        console.print("\nChoose an action:")
-        console.print("[bold green]l[/bold green] - Use Local version (keep your changes)")
-        console.print("[bold blue]r[/bold blue] - Use Remote version (use repository version)")
-        console.print("[bold red]s[/bold red] - Skip this item (leave both unchanged)")
+        choices = [
+            "Use Local version (keep your changes)",
+            "Use Remote version (use repository version)",
+            "Skip this item (leave both unchanged)"
+        ]
 
-        while True:
-            try:
-                choice = input("\nEnter your choice (l/r/s): ").lower().strip()
+        try:
+            questions = [
+                inquirer.List(
+                    'action',
+                    message=f"Choose action for {item_name}",
+                    choices=choices,
+                    default=choices[0]
+                ),
+            ]
+            answers = inquirer.prompt(questions)
 
-                if choice == 'l':
-                    console.print(f"[green]✅ Using local version of {item_name}[/green]")
-                    file_ops.remove_path(remote_path, is_dir)
-                    file_ops.copy_path(local_path, remote_path, is_dir)
-                    return "local"
-                elif choice == 'r':
-                    console.print(f"[blue]✅ Using remote version of {item_name}[/blue]")
-                    file_ops.remove_path(local_path, is_dir)
-                    file_ops.copy_path(remote_path, local_path, is_dir)
-                    return "remote"
-                elif choice == 's':
-                    console.print(f"[yellow]⏭️ Skipping {item_name}[/yellow]")
-                    return "skip"
-                else:
-                    console.print("[red]Invalid choice. Please enter 'l', 'r', or 's'.[/red]")
-            except (EOFError, KeyboardInterrupt):
+            if answers is None:  # User pressed Ctrl+C
                 console.print(f"\n[yellow]⏭️ Interrupted. Skipping {item_name}[/yellow]")
                 return "skip"
+
+            choice = answers['action']
+
+            if choice == choices[0]:  # Use Local
+                console.print(f"[green]✅ Using local version of {item_name}[/green]")
+                file_ops.remove_path(remote_path, is_dir)
+                file_ops.copy_path(local_path, remote_path, is_dir)
+                return "local"
+            elif choice == choices[1]:  # Use Remote
+                console.print(f"[blue]✅ Using remote version of {item_name}[/blue]")
+                file_ops.remove_path(local_path, is_dir)
+                file_ops.copy_path(remote_path, local_path, is_dir)
+                return "remote"
+            else:  # Skip
+                console.print(f"[yellow]⏭️ Skipping {item_name}[/yellow]")
+                return "skip"
+
+        except (EOFError, KeyboardInterrupt):
+            console.print(f"\n[yellow]⏭️ Interrupted. Skipping {item_name}[/yellow]")
+            return "skip"

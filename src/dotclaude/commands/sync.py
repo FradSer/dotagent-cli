@@ -66,31 +66,7 @@ def _handle_sync_result(result, operation_name: str) -> None:
 
 
 @app.callback(invoke_without_command=True)
-def sync_default(
-    ctx: typer.Context,
-    prefer: Optional[str] = typer.Option(
-        "remote", "--prefer", help="Conflict resolution preference: local or remote"
-    ),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview changes without applying"
-    ),
-    force: bool = typer.Option(
-        False, "--force", help="Force overwrite without prompts"
-    ),
-    branch: Optional[str] = typer.Option(None, "--branch", help="Use specific branch"),
-    develop: bool = typer.Option(
-        False,
-        "--develop",
-        "-d",
-        help="Use develop branch (shortcut for --branch develop)",
-    ),
-    repo_url: Optional[str] = typer.Option(
-        None,
-        "--repo-url",
-        "--repo",
-        help="Repository URL (supports HTTPS, SSH, or user/repo format)",
-    ),
-) -> None:
+def sync_default(ctx: typer.Context) -> None:
     """
     Sync configuration with repository.
 
@@ -100,25 +76,12 @@ def sync_default(
         # Run default bidirectional sync
         console.print("[bold blue]Starting bidirectional sync...[/bold blue]")
 
-        # Convert prefer to ConflictResolution
-        conflict_resolution = (
-            ConflictResolution.LOCAL if prefer == "local" else ConflictResolution.REMOTE
-        )
-
-        # Fix parameter types from Typer parsing issues
-        dry_run = bool(dry_run) if dry_run is not None else False
-        force = bool(force) if force != 'False' else False
-        develop = bool(develop) if develop != 'False' else False
-
-        # Determine target branch using helper function
-        target_branch = _determine_target_branch(develop, branch)
-
         options = SyncOptions(
-            conflict_resolution=conflict_resolution,
-            dry_run=dry_run,
-            force=force,
-            branch=target_branch,
-            repository_url=repo_url,
+            conflict_resolution=ConflictResolution.REMOTE,
+            dry_run=False,
+            force=False,
+            branch="main",
+            repository_url=None,
         )
 
         engine = SyncEngine()
@@ -159,13 +122,11 @@ def pull(
     develop: bool = typer.Option(
         False,
         "--develop",
-        "-d",
         help="Use develop branch (shortcut for --branch develop)",
     ),
     repo_url: Optional[str] = typer.Option(
         None,
         "--repo-url",
-        "--repo",
         help="Repository URL (supports HTTPS, SSH, or user/repo format)",
     ),
 ) -> None:
@@ -202,13 +163,11 @@ def push(
     develop: bool = typer.Option(
         False,
         "--develop",
-        "-d",
         help="Use develop branch (shortcut for --branch develop)",
     ),
     repo_url: Optional[str] = typer.Option(
         None,
         "--repo-url",
-        "--repo",
         help="Repository URL (supports HTTPS, SSH, or user/repo format)",
     ),
 ) -> None:

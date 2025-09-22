@@ -62,6 +62,9 @@ dotclaude config get key
 ### Sync Operations
 
 ```bash
+# Default sync with default repository (https://github.com/FradSer/dotclaude)
+dotclaude sync
+
 # Sync from remote to local
 dotclaude sync pull
 
@@ -69,8 +72,53 @@ dotclaude sync pull
 dotclaude sync push
 
 # Two-way sync with conflict resolution
-dotclaude sync bidirectional
+dotclaude sync --prefer local
 ```
+
+### Custom Repository Sync
+
+DotClaude supports syncing with any GitHub repository. You can specify the repository using multiple formats:
+
+```bash
+# Sync with custom repository using full HTTPS URL
+dotclaude sync --repo-url https://github.com/username/my-dotclaude
+
+# Sync with custom repository using short format
+dotclaude sync --repo username/my-dotclaude
+
+# Pull from custom repository with specific branch
+dotclaude pull --repo-url https://github.com/org/configs --branch develop
+
+# Push to custom repository
+dotclaude push --repo company/shared-configs --branch main
+```
+
+### Repository URL Configuration
+
+You can set a default repository URL using configuration:
+
+```bash
+# Set default repository URL
+dotclaude config set sync.repo_url https://github.com/myteam/dotclaude
+
+# View current repository URL
+dotclaude config get sync.repo_url
+
+# Use environment variable
+export DOTCLAUDE_REPO_URL=https://github.com/company/configs
+dotclaude sync
+```
+
+**URL Resolution Priority:**
+1. Command-line `--repo-url` option (highest priority)
+2. Environment variable `DOTCLAUDE_REPO_URL`
+3. Configuration file `sync.repo_url`
+4. Default: `https://github.com/FradSer/dotclaude` (lowest priority)
+
+**Supported URL Formats:**
+- **HTTPS**: `https://github.com/user/repo`
+- **SSH**: `git@github.com:user/repo.git` (auto-converts to HTTPS)
+- **Short**: `user/repo` (auto-expands to HTTPS)
 
 ### Agent Management
 

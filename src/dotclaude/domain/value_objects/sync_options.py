@@ -90,10 +90,14 @@ class SyncOptions(BaseModel):
         if not v:
             return None
 
-        # Basic URL validation
+        # URL validation patterns:
+        # 1. Full HTTPS/HTTP URLs: https://github.com/user/repo
+        # 2. SSH URLs: git@github.com:user/repo.git
+        # 3. Short format: user/repo (expanded by ConfigManager)
         url_pattern = re.compile(
-            r"^(https?|git|ssh)://[^\s/$.?#].[^\s]*$|"
-            r"^git@[^\s:]+:[^\s]+\.git$"
+            r"^(https?|git|ssh)://[^\s/$.?#].[^\s]*$|"  # Full URLs
+            r"^git@[^\s:]+:[^\s]+\.git$|"              # SSH URLs
+            r"^[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+$"     # Short format: user/repo
         )
 
         if not url_pattern.match(v):

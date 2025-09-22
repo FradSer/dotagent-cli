@@ -32,7 +32,7 @@ class DefaultPaths:
 class DefaultRepository:
     """Default repository configuration."""
 
-    URL = "git@github.com:FradSer/dotclaude.git"
+    URL = "https://github.com/FradSer/dotclaude"
     BRANCH = "main"
 
 
