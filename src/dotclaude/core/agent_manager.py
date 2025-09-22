@@ -42,21 +42,21 @@ class AgentManager:
         self.local_agents_dir = Path.cwd() / "local-agents"
         self.project_agents_dir = Path.cwd() / ".claude" / "agents"
 
+    def _list_agents_from_directory(self, directory: Path, agent_type: str) -> list[AgentInfo]:
+        """Common agent listing logic for any directory."""
+        if not directory.exists():
+            return []
+
+        return [self._parse_agent_file(agent_file, agent_type)
+                for agent_file in directory.glob("*.md")]
+
     def list_global_agents(self) -> list[AgentInfo]:
         """List all global agents."""
-        agents = []
-        if self.global_agents_dir.exists():
-            for agent_file in self.global_agents_dir.glob("*.md"):
-                agents.append(self._parse_agent_file(agent_file, "global"))
-        return agents
+        return self._list_agents_from_directory(self.global_agents_dir, "global")
 
     def list_local_agents(self) -> list[AgentInfo]:
         """List all local agents."""
-        agents = []
-        if self.local_agents_dir.exists():
-            for agent_file in self.local_agents_dir.glob("*.md"):
-                agents.append(self._parse_agent_file(agent_file, "local"))
-        return agents
+        return self._list_agents_from_directory(self.local_agents_dir, "local")
 
     def list_all_agents(self) -> list[AgentInfo]:
         """List all agents (global and local)."""
@@ -64,17 +64,15 @@ class AgentManager:
 
     def get_agent_info(self, name: str) -> Optional[AgentInfo]:
         """Get detailed information about a specific agent."""
-        # Check global agents first
-        for agent in self.list_global_agents():
-            if agent.name == name or agent.name == f"{name}.md":
+        # Check all agents for name match
+        for agent in self.list_all_agents():
+            if self._agent_name_matches(agent.name, name):
                 return agent
-
-        # Then check local agents
-        for agent in self.list_local_agents():
-            if agent.name == name or agent.name == f"{name}.md":
-                return agent
-
         return None
+
+    def _agent_name_matches(self, agent_name: str, search_name: str) -> bool:
+        """Check if agent name matches search criteria."""
+        return agent_name == search_name or agent_name == f"{search_name}.md"
 
     def copy_agents(self, agent_names: list[str], force: bool = False) -> CopyResult:
         """Copy specified agents to project directory."""

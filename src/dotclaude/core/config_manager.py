@@ -12,6 +12,21 @@ from dotclaude.domain.constants import YAMLConfig
 from dotclaude.utils.console import console
 
 
+# Default configuration constants
+DEFAULT_CONFIG = {
+    "sync": {
+        "repo_url": "git@github.com:FradSer/dotclaude.git",
+        "branch": "main",
+        "prefer": "remote",
+    },
+    "git": {
+        "auto_commit": True,
+        "commit_template": "sync: update configuration via dotclaude CLI",
+    },
+    "ui": {"use_color": True, "show_progress": True},
+}
+
+
 class ConfigScope(Enum):
     """Configuration scope levels."""
 
@@ -169,17 +184,12 @@ class ConfigManager:
             return None
 
     def _get_nested_value(self, config: dict[str, Any], key: str) -> Any:
-        """Get nested value using dot notation."""
-        keys = key.split(".")
-        value = config
-
-        for k in keys:
-            if isinstance(value, dict) and k in value:
-                value = value[k]
-            else:
-                return None
-
-        return value
+        """Get nested value using dot notation with improved error handling."""
+        try:
+            from functools import reduce
+            return reduce(dict.get, key.split('.'), config)
+        except (AttributeError, TypeError):
+            return None
 
     def _set_nested_value(self, config: dict[str, Any], key: str, value: Any) -> None:
         """Set nested value using dot notation."""
@@ -215,18 +225,7 @@ class ConfigManager:
 
     def get_default_config(self) -> dict[str, Any]:
         """Get default configuration values."""
-        return {
-            "sync": {
-                "repo_url": "git@github.com:FradSer/dotclaude.git",
-                "branch": "main",
-                "prefer": "remote",
-            },
-            "git": {
-                "auto_commit": True,
-                "commit_template": "sync: update configuration via dotclaude CLI",
-            },
-            "ui": {"use_color": True, "show_progress": True},
-        }
+        return DEFAULT_CONFIG.copy()
 
     def initialize_default_config(
         self, scope: ConfigScope = ConfigScope.GLOBAL
