@@ -129,6 +129,63 @@ class SyncStrategy(ABC):
         # For now, just return True (will implement interactive prompts later)
         return True
 
+    def _process_local_agents_item(self, working_dir: Path, options: SyncOptions) -> OperationResult:
+        """Process local-agents item: remote/local-agents/ -> .claude/agents/"""
+        from dotclaude.core.sync_utils import SyncFileOperations
+
+        remote_local_agents = working_dir / "local-agents"
+        project_agents = Path.cwd() / ".claude" / "agents"
+        file_ops = SyncFileOperations()
+
+        if not remote_local_agents.exists():
+            return self._create_operation_result(
+                "local-agents", "skip", True, "No local-agents in remote repository"
+            )
+
+        project_agents_exists = project_agents.exists()
+
+        if options.dry_run:
+            if project_agents_exists:
+                if file_ops.paths_identical(remote_local_agents, project_agents, True):
+                    return self._handle_dry_run_operation(
+                        "local-agents", "skip", "no changes needed"
+                    )
+                else:
+                    return self._handle_dry_run_operation(
+                        "local-agents", "copy_to_local", "update project agents"
+                    )
+            else:
+                return self._handle_dry_run_operation(
+                    "local-agents", "copy_to_local", "create project agents"
+                )
+
+        # Create .claude directory if it doesn't exist
+        project_agents.parent.mkdir(parents=True, exist_ok=True)
+
+        if project_agents_exists:
+            if file_ops.paths_identical(remote_local_agents, project_agents, True):
+                return self._create_operation_result(
+                    "local-agents", "skip", True, "Project agents are up to date"
+                )
+            else:
+                if options.force or self._prompt_overwrite("project agents"):
+                    console.print("Updating project agents from remote local-agents")
+                    file_ops.remove_path(project_agents, True)
+                    file_ops.copy_path(remote_local_agents, project_agents, True)
+                    return self._create_operation_result(
+                        "local-agents", "copy_to_local", True, "Updated project agents"
+                    )
+                else:
+                    return self._create_operation_result(
+                        "local-agents", "skip", True, "Skipped by user choice"
+                    )
+        else:
+            console.print("Creating project agents from remote local-agents")
+            file_ops.copy_path(remote_local_agents, project_agents, True)
+            return self._create_operation_result(
+                "local-agents", "copy_to_local", True, "Created project agents"
+            )
+
 
 class PullSyncStrategy(SyncStrategy):
     """Strategy for pull-only synchronization."""
@@ -151,6 +208,10 @@ class PullSyncStrategy(SyncStrategy):
         self, working_dir: Path, item_name: str, item_type: str, options: SyncOptions
     ) -> OperationResult:
         """Process a single item for pull operation."""
+        # Special handling for local-agents: remote/local-agents/ -> .claude/agents/
+        if item_name == "local-agents":
+            return self._process_local_agents_item(working_dir, options)
+
         remote_path = working_dir / item_name
         local_path = self.claude_dir / item_name
 
@@ -256,6 +317,10 @@ class BidirectionalSyncStrategy(SyncStrategy):
     ) -> OperationResult:
         """Process a single item for bidirectional operation."""
         from dotclaude.core.sync_utils import SyncFileOperations
+
+        # Special handling for local-agents: remote/local-agents/ -> .claude/agents/
+        if item_name == "local-agents":
+            return self._process_local_agents_item(working_dir, options)
 
         local_path = self.claude_dir / item_name
         remote_path = working_dir / item_name

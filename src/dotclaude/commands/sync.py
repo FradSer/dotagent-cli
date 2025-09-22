@@ -191,7 +191,7 @@ def _display_sync_status_tables(result, target_branch: str) -> None:
 
     # Display local configuration status
     if local_items:
-        console.print(f"\n[bold blue]Local Configuration[/bold blue] [dim](from .claude/)[/dim]")
+        console.print(f"\n[bold blue]Local Configuration[/bold blue] [dim](remote local-agents/ -> .claude/agents/)[/dim]")
         local_table = Table(show_header=True, header_style="bold magenta", box=None)
         local_table.add_column("Item", style="cyan", no_wrap=True)
         local_table.add_column("Status", style="white")

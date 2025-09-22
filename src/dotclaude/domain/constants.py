@@ -39,12 +39,20 @@ class DefaultRepository:
 class SyncItems:
     """Items that are synchronized between local and remote."""
 
-    ITEMS = [
+    # Global sync items: ~/.claude/ <-> remote repository
+    GLOBAL_ITEMS = [
         ("agents", "dir"),
         ("commands", "dir"),
-        ("local-agents", "dir"),
         ("CLAUDE.md", "file"),
     ]
+
+    # Local sync items: remote -> project .claude/
+    LOCAL_ITEMS = [
+        ("local-agents", "dir", "agents"),  # remote/local-agents/ -> .claude/agents/
+    ]
+
+    # All items for backward compatibility
+    ITEMS = GLOBAL_ITEMS + [("local-agents", "dir")]
 
 
 class Git:
