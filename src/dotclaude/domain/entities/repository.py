@@ -34,7 +34,9 @@ class Repository:
             validation_errors.append(f"Invalid repository URL: {self.url}")
 
         try:
-            from ...infrastructure.validators.branch_validator import BranchNameValidator
+            from ...infrastructure.validators.branch_validator import (
+                BranchNameValidator,
+            )
             BranchNameValidator().validate(self.branch)
         except Exception:
             validation_errors.append(f"Invalid branch name: {self.branch}")

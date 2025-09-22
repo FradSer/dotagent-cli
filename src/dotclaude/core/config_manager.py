@@ -11,7 +11,6 @@ from ruamel.yaml import YAML
 from dotclaude.domain.constants import YAMLConfig
 from dotclaude.utils.console import console
 
-
 # Default configuration constants
 DEFAULT_CONFIG = {
     "sync": {
