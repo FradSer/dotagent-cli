@@ -70,7 +70,7 @@ class TestSyncUseCase:
         all_mocks: dict,
     ) -> None:
         """Test sync execution with validation errors."""
-        options = SyncOptions(repository_url="invalid://url")
+        options = SyncOptions(repository_url="https://github.com/user/repo")
         all_mocks["security_service"].is_safe_url.return_value = False
 
         result = sync_use_case.execute(options)

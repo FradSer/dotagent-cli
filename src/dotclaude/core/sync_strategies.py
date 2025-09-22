@@ -388,14 +388,10 @@ class BidirectionalSyncStrategy(SyncStrategy):
             item_name, "copy_to_local", True, "Copied to local successfully"
         )
 
-    def _resolve_conflict_interactive(
-        self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
-    ) -> str:
-        """Resolve conflict interactively with arrow key support."""
-        import inquirer
-
+    def _display_conflict_info(self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool) -> None:
+        """Display conflict information to the user."""
         console.print(f"\n[bold yellow]⚠️ Conflict detected for: {item_name}[/bold yellow]")
-        console.print(f"Both local and remote versions exist and are different.")
+        console.print("Both local and remote versions exist and are different.")
 
         if is_dir:
             console.print(f"📁 Local directory: {local_path}")
@@ -403,6 +399,10 @@ class BidirectionalSyncStrategy(SyncStrategy):
         else:
             console.print(f"📄 Local file: {local_path}")
             console.print(f"📄 Remote file: {remote_path}")
+
+    def _prompt_user_choice(self, item_name: str) -> int:
+        """Prompt user for conflict resolution choice."""
+        import inquirer
 
         choices = [
             "Use Local version (keep your changes)",
@@ -422,25 +422,38 @@ class BidirectionalSyncStrategy(SyncStrategy):
             answers = inquirer.prompt(questions)
 
             if answers is None:  # User pressed Ctrl+C
-                console.print(f"\n[yellow]⏭️ Interrupted. Skipping {item_name}[/yellow]")
-                return "skip"
+                return -1  # Signal interruption
 
-            choice = answers['action']
-
-            if choice == choices[0]:  # Use Local
-                console.print(f"[green]✅ Using local version of {item_name}[/green]")
-                file_ops.remove_path(remote_path, is_dir)
-                file_ops.copy_path(local_path, remote_path, is_dir)
-                return "local"
-            elif choice == choices[1]:  # Use Remote
-                console.print(f"[blue]✅ Using remote version of {item_name}[/blue]")
-                file_ops.remove_path(local_path, is_dir)
-                file_ops.copy_path(remote_path, local_path, is_dir)
-                return "remote"
-            else:  # Skip
-                console.print(f"[yellow]⏭️ Skipping {item_name}[/yellow]")
-                return "skip"
+            return choices.index(answers['action'])
 
         except (EOFError, KeyboardInterrupt):
+            return -1  # Signal interruption
+
+    def _execute_conflict_resolution(
+        self, choice_index: int, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
+    ) -> str:
+        """Execute the chosen conflict resolution action."""
+        if choice_index == -1:  # Interrupted
             console.print(f"\n[yellow]⏭️ Interrupted. Skipping {item_name}[/yellow]")
             return "skip"
+        elif choice_index == 0:  # Use Local
+            console.print(f"[green]✅ Using local version of {item_name}[/green]")
+            file_ops.remove_path(remote_path, is_dir)
+            file_ops.copy_path(local_path, remote_path, is_dir)
+            return "local"
+        elif choice_index == 1:  # Use Remote
+            console.print(f"[blue]✅ Using remote version of {item_name}[/blue]")
+            file_ops.remove_path(local_path, is_dir)
+            file_ops.copy_path(remote_path, local_path, is_dir)
+            return "remote"
+        else:  # Skip
+            console.print(f"[yellow]⏭️ Skipping {item_name}[/yellow]")
+            return "skip"
+
+    def _resolve_conflict_interactive(
+        self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
+    ) -> str:
+        """Resolve conflict interactively with arrow key support."""
+        self._display_conflict_info(item_name, local_path, remote_path, is_dir)
+        choice_index = self._prompt_user_choice(item_name)
+        return self._execute_conflict_resolution(choice_index, item_name, local_path, remote_path, is_dir, file_ops)

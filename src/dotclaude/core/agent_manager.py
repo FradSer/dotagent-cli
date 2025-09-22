@@ -11,6 +11,12 @@ from rich.table import Table
 
 from dotclaude.utils.console import console
 
+# Constants for agent description parsing
+MAX_DESCRIPTION_SCAN_LINES = 10
+MIN_DESCRIPTION_LINE_LENGTH = 10
+MAX_DESCRIPTION_LENGTH = 100
+DESCRIPTION_TRUNCATE_SUFFIX = "..."
+
 
 @dataclass
 class AgentInfo:
@@ -206,13 +212,17 @@ class AgentManager:
             lines = content.split("\n")
 
             # Extract description from first few lines or markdown headers
-            for line in lines[:10]:
+            for line in lines[:MAX_DESCRIPTION_SCAN_LINES]:
                 line = line.strip()
                 if line.startswith("#") and len(line) > 2:
                     description = line.lstrip("#").strip()
                     break
-                elif line and not line.startswith("#") and len(line) > 10:
-                    description = line[:100] + "..." if len(line) > 100 else line
+                elif line and not line.startswith("#") and len(line) > MIN_DESCRIPTION_LINE_LENGTH:
+                    description = (
+                        line[:MAX_DESCRIPTION_LENGTH] + DESCRIPTION_TRUNCATE_SUFFIX
+                        if len(line) > MAX_DESCRIPTION_LENGTH
+                        else line
+                    )
                     break
 
             # Look for specializations or capabilities

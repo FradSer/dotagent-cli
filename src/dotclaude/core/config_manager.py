@@ -11,6 +11,12 @@ from ruamel.yaml import YAML
 from dotclaude.domain.constants import YAMLConfig
 from dotclaude.utils.console import console
 
+# Constants for URL processing
+SSH_GITHUB_PREFIX = "git@github.com:"
+SSH_GITHUB_PREFIX_LENGTH = len(SSH_GITHUB_PREFIX)
+GIT_EXTENSION = ".git"
+GIT_EXTENSION_LENGTH = len(GIT_EXTENSION)
+
 
 class ConfigFileHandler:
     """Handles file I/O operations for configuration files."""
@@ -323,11 +329,11 @@ class ConfigManager:
                 return f"https://github.com/{url}"
 
         # Handle SSH format - convert to HTTPS for broader compatibility
-        if url.startswith("git@github.com:"):
+        if url.startswith(SSH_GITHUB_PREFIX):
             # Extract user/repo from git@github.com:user/repo.git
-            path = url[15:]  # Remove "git@github.com:"
-            if path.endswith(".git"):
-                path = path[:-4]  # Remove ".git"
+            path = url[SSH_GITHUB_PREFIX_LENGTH:]  # Remove "git@github.com:"
+            if path.endswith(GIT_EXTENSION):
+                path = path[:-GIT_EXTENSION_LENGTH]  # Remove ".git"
             return f"https://github.com/{path}"
 
         # Return as-is for HTTPS URLs
