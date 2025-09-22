@@ -185,10 +185,12 @@ class PushSyncStrategy(SyncStrategy):
 
         # Commit and push changes if there are any
         if changes_made > 0 and not options.dry_run:
+            console.print(f"[info]Pushing {changes_made} changes to remote repository...[/info]")
             try:
                 self.git_manager.stage_all_changes()
                 self.git_manager.create_commit(Git.COMMIT_MESSAGES["sync"])
                 self.git_manager.push_changes(options.branch)
+                console.print("[success]Successfully pushed changes to remote repository[/success]")
             except Exception as e:
                 console.print(f"[warning]Git operations failed: {e}[/warning]")
                 console.print("[info]Local changes have been made but not pushed to remote[/info]")
@@ -231,18 +233,18 @@ class BidirectionalSyncStrategy(SyncStrategy):
             operations.append(result)
             if result.status == OperationStatus.SUCCESS and result.operation in [
                 "use_local",
-                "use_remote",
                 "copy_to_repo",
-                "copy_to_local",
             ]:
                 changes_made += 1
 
-        # Commit and push if there are changes
+        # Commit and push if there are changes that need to be pushed to remote
         if changes_made > 0 and not options.dry_run:
+            console.print(f"[info]Pushing {changes_made} changes to remote repository...[/info]")
             try:
                 self.git_manager.stage_all_changes()
                 self.git_manager.create_commit(Git.COMMIT_MESSAGES["bidirectional"])
                 self.git_manager.push_changes(options.branch)
+                console.print("[success]Successfully pushed changes to remote repository[/success]")
             except Exception as e:
                 console.print(f"[warning]Git operations failed: {e}[/warning]")
                 console.print("[info]Local changes have been made but not pushed to remote[/info]")

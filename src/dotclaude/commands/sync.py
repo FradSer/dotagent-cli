@@ -56,6 +56,36 @@ def _handle_sync_result(result, operation_name: str) -> None:
         console.print(f"Items processed: {result.items_processed}")
         console.print(f"Duration: {result.duration:.2f}s")
 
+        # Show operation summary
+        if hasattr(result, 'operations') and result.operations:
+            operation_counts = {}
+            for op in result.operations:
+                op_type = op.operation
+                if op_type not in operation_counts:
+                    operation_counts[op_type] = 0
+                operation_counts[op_type] += 1
+
+            if operation_counts:
+                summary_parts = []
+                for op_type, count in operation_counts.items():
+                    if op_type == "use_local":
+                        summary_parts.append(f"{count} used local version")
+                    elif op_type == "use_remote":
+                        summary_parts.append(f"{count} used remote version")
+                    elif op_type == "copy_to_repo":
+                        summary_parts.append(f"{count} copied to repo")
+                    elif op_type == "copy_to_local":
+                        summary_parts.append(f"{count} copied to local")
+                    elif op_type == "create":
+                        summary_parts.append(f"{count} created")
+                    elif op_type == "update":
+                        summary_parts.append(f"{count} updated")
+                    elif op_type == "skip":
+                        summary_parts.append(f"{count} skipped")
+
+                if summary_parts:
+                    console.print(f"[dim]Summary: {', '.join(summary_parts)}[/dim]")
+
         if result.has_failures:
             failure_summary = result.get_failure_summary()
             if failure_summary:
