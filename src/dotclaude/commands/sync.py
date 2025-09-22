@@ -106,6 +106,11 @@ def sync_default(
             ConflictResolution.LOCAL if prefer == "local" else ConflictResolution.REMOTE
         )
 
+        # Fix parameter types from Typer parsing issues
+        dry_run = bool(dry_run) if dry_run is not None else False
+        force = bool(force) if force != 'False' else False
+        develop = bool(develop) if develop != 'False' else False
+
         # Determine target branch using helper function
         target_branch = _determine_target_branch(develop, branch)
 
@@ -169,6 +174,11 @@ def pull(
     """Pull changes from repository."""
     console.print("[bold green]Pulling from repository...[/bold green]")
 
+    # Fix parameter types from Typer parsing issues
+    dry_run = bool(dry_run) if dry_run is not None else False
+    force = bool(force) if force != 'False' else False
+    develop = bool(develop) if develop != 'False' else False
+
     # Determine target branch using helper function
     target_branch = _determine_target_branch(develop, branch)
 
@@ -207,6 +217,11 @@ def push(
 ) -> None:
     """Push changes to repository."""
     console.print("[bold yellow]Pushing to repository...[/bold yellow]")
+
+    # Fix parameter types from Typer parsing issues
+    dry_run = bool(dry_run) if dry_run is not None else False
+    force = bool(force) if force != 'False' else False
+    develop = bool(develop) if develop != 'False' else False
 
     # Determine target branch using helper function
     target_branch = _determine_target_branch(develop, branch)
