@@ -204,6 +204,10 @@ Please ensure your code follows the project's coding standards:
 - Follow TDD practices
 - Run all quality checks before submitting
 
+## 🐛 Known Issues
+
+- **Help Command Issue**: The `--help` command for sync subcommands currently has a TypeError due to Typer compatibility issues. This is a known limitation that doesn't affect the functionality of the sync commands themselves. Use the main help or individual subcommands without `--help` for now.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
