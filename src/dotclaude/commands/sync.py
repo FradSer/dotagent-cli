@@ -72,16 +72,17 @@ def sync_default(
         "remote", "--prefer", help="Conflict resolution preference: local or remote"
     ),
     dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview changes without applying"
+        False, "--dry-run", is_flag=True, help="Preview changes without applying"
     ),
     force: bool = typer.Option(
-        False, "--force", help="Force overwrite without prompts"
+        False, "--force", is_flag=True, help="Force overwrite without prompts"
     ),
     branch: Optional[str] = typer.Option(None, "--branch", help="Use specific branch"),
     develop: bool = typer.Option(
         False,
         "--develop",
         "-d",
+        is_flag=True,
         help="Use develop branch (shortcut for --branch develop)",
     ),
     repo_url: Optional[str] = typer.Option(
@@ -145,16 +146,17 @@ def status() -> None:
 @app.command()
 def pull(
     dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview changes without applying"
+        False, "--dry-run", is_flag=True, help="Preview changes without applying"
     ),
     force: bool = typer.Option(
-        False, "--force", help="Force overwrite without prompts"
+        False, "--force", is_flag=True, help="Force overwrite without prompts"
     ),
     branch: Optional[str] = typer.Option(None, "--branch", help="Use specific branch"),
     develop: bool = typer.Option(
         False,
         "--develop",
         "-d",
+        is_flag=True,
         help="Use develop branch (shortcut for --branch develop)",
     ),
     repo_url: Optional[str] = typer.Option(
@@ -183,16 +185,17 @@ def pull(
 @app.command()
 def push(
     dry_run: bool = typer.Option(
-        False, "--dry-run", help="Preview changes without applying"
+        False, "--dry-run", is_flag=True, help="Preview changes without applying"
     ),
     force: bool = typer.Option(
-        False, "--force", help="Force overwrite without prompts"
+        False, "--force", is_flag=True, help="Force overwrite without prompts"
     ),
     branch: Optional[str] = typer.Option(None, "--branch", help="Use specific branch"),
     develop: bool = typer.Option(
         False,
         "--develop",
         "-d",
+        is_flag=True,
         help="Use develop branch (shortcut for --branch develop)",
     ),
     repo_url: Optional[str] = typer.Option(
