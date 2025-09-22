@@ -64,37 +64,65 @@ class SyncStrategy(ABC):
         file_ops = SyncFileOperations()
 
         if not dest_path.exists():
-            # Create operation
-            if options.dry_run:
-                return self._handle_dry_run_operation(item_name, "create", f"create {operation_type}")
-
-            console.print(f"[success]Creating {operation_type}: {item_name}[/success]")
-            file_ops.copy_path(source_path, dest_path, is_dir)
-            return self._create_operation_result(
-                item_name, "create", True, f"Created {operation_type} successfully"
+            return self._handle_create_operation(
+                item_name, source_path, dest_path, is_dir, operation_type, options, file_ops
             )
         elif not file_ops.paths_identical(source_path, dest_path, is_dir):
-            # Update operation
-            if options.dry_run:
-                return self._handle_dry_run_operation(item_name, "update", f"update {operation_type}")
-
-            if options.force or self._prompt_overwrite(f"{item_name} {operation_type}"):
-                console.print(f"[success]Updating {operation_type}: {item_name}[/success]")
-                file_ops.remove_path(dest_path, is_dir)
-                file_ops.copy_path(source_path, dest_path, is_dir)
-                return self._create_operation_result(
-                    item_name, "update", True, f"Updated {operation_type} successfully"
-                )
-            else:
-                console.print(f"[info]Skipping: {item_name}[/info]")
-                return self._create_operation_result(
-                    item_name, "skip", True, "Skipped by user choice"
-                )
+            return self._handle_update_operation(
+                item_name, source_path, dest_path, is_dir, operation_type, options, file_ops
+            )
 
         # No changes needed
         return self._create_operation_result(
             item_name, "skip", True, "No changes needed"
         )
+
+    def _handle_create_operation(
+        self,
+        item_name: str,
+        source_path: Path,
+        dest_path: Path,
+        is_dir: bool,
+        operation_type: str,
+        options: SyncOptions,
+        file_ops
+    ) -> OperationResult:
+        """Handle file creation operation."""
+        if options.dry_run:
+            return self._handle_dry_run_operation(item_name, "create", f"create {operation_type}")
+
+        console.print(f"[success]Creating {operation_type}: {item_name}[/success]")
+        file_ops.copy_path(source_path, dest_path, is_dir)
+        return self._create_operation_result(
+            item_name, "create", True, f"Created {operation_type} successfully"
+        )
+
+    def _handle_update_operation(
+        self,
+        item_name: str,
+        source_path: Path,
+        dest_path: Path,
+        is_dir: bool,
+        operation_type: str,
+        options: SyncOptions,
+        file_ops
+    ) -> OperationResult:
+        """Handle file update operation."""
+        if options.dry_run:
+            return self._handle_dry_run_operation(item_name, "update", f"update {operation_type}")
+
+        if options.force or self._prompt_overwrite(f"{item_name} {operation_type}"):
+            console.print(f"[success]Updating {operation_type}: {item_name}[/success]")
+            file_ops.remove_path(dest_path, is_dir)
+            file_ops.copy_path(source_path, dest_path, is_dir)
+            return self._create_operation_result(
+                item_name, "update", True, f"Updated {operation_type} successfully"
+            )
+        else:
+            console.print(f"[info]Skipping: {item_name}[/info]")
+            return self._create_operation_result(
+                item_name, "skip", True, "Skipped by user choice"
+            )
 
     def _prompt_overwrite(self, item_name: str) -> bool:
         """Prompt user for overwrite confirmation."""
@@ -265,20 +293,9 @@ class BidirectionalSyncStrategy(SyncStrategy):
             )
 
         if options.force:
-            if options.conflict_resolution == ConflictResolution.LOCAL:
-                console.print(f"[success]Using local version: {item_name}[/success]")
-                file_ops.remove_path(remote_path, is_dir)
-                file_ops.copy_path(local_path, remote_path, is_dir)
-                return self._create_operation_result(
-                    item_name, "use_local", True, "Used local version"
-                )
-            else:
-                console.print(f"[success]Using remote version: {item_name}[/success]")
-                file_ops.remove_path(local_path, is_dir)
-                file_ops.copy_path(remote_path, local_path, is_dir)
-                return self._create_operation_result(
-                    item_name, "use_remote", True, "Used remote version"
-                )
+            return self._resolve_conflict_forced(
+                item_name, local_path, remote_path, is_dir, options, file_ops
+            )
         else:
             # Interactive resolution
             choice = self._resolve_conflict_interactive(
@@ -286,6 +303,31 @@ class BidirectionalSyncStrategy(SyncStrategy):
             )
             return self._create_operation_result(
                 item_name, f"use_{choice}", True, f"Used {choice} version (interactive)"
+            )
+
+    def _resolve_conflict_forced(
+        self,
+        item_name: str,
+        local_path: Path,
+        remote_path: Path,
+        is_dir: bool,
+        options: SyncOptions,
+        file_ops
+    ) -> OperationResult:
+        """Resolve conflict using forced resolution strategy."""
+        if options.conflict_resolution == ConflictResolution.LOCAL:
+            console.print(f"[success]Using local version: {item_name}[/success]")
+            file_ops.remove_path(remote_path, is_dir)
+            file_ops.copy_path(local_path, remote_path, is_dir)
+            return self._create_operation_result(
+                item_name, "use_local", True, "Used local version"
+            )
+        else:
+            console.print(f"[success]Using remote version: {item_name}[/success]")
+            file_ops.remove_path(local_path, is_dir)
+            file_ops.copy_path(remote_path, local_path, is_dir)
+            return self._create_operation_result(
+                item_name, "use_remote", True, "Used remote version"
             )
 
     def _handle_local_only(
