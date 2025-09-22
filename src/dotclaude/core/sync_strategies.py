@@ -296,8 +296,9 @@ class BidirectionalSyncStrategy(SyncStrategy):
             )
 
         if options.dry_run:
+            preference = "local" if options.conflict_resolution == ConflictResolution.LOCAL else "remote"
             return self._handle_dry_run_operation(
-                item_name, "resolve_conflict", "resolve conflict"
+                item_name, "resolve_conflict", f"resolve conflict (would use {preference} version)"
             )
 
         if options.force:
@@ -309,9 +310,14 @@ class BidirectionalSyncStrategy(SyncStrategy):
             choice = self._resolve_conflict_interactive(
                 item_name, local_path, remote_path, is_dir, file_ops
             )
-            return self._create_operation_result(
-                item_name, f"use_{choice}", True, f"Used {choice} version (interactive)"
-            )
+            if choice == "skip":
+                return self._create_operation_result(
+                    item_name, "skip", True, "Skipped by user choice (interactive)"
+                )
+            else:
+                return self._create_operation_result(
+                    item_name, f"use_{choice}", True, f"Used {choice} version (interactive)"
+                )
 
     def _resolve_conflict_forced(
         self,
@@ -384,11 +390,40 @@ class BidirectionalSyncStrategy(SyncStrategy):
         self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
     ) -> str:
         """Resolve conflict interactively."""
-        # For now, just prefer remote (will implement interactive resolution later)
-        console.print(f"[warning]Conflict detected for: {item_name}[/warning]")
-        console.print(
-            "[info]Using remote version (interactive resolution not yet implemented)[/info]"
-        )
-        file_ops.remove_path(local_path, is_dir)
-        file_ops.copy_path(remote_path, local_path, is_dir)
-        return "remote"
+        console.print(f"\n[bold yellow]⚠️ Conflict detected for: {item_name}[/bold yellow]")
+        console.print(f"Both local and remote versions exist and are different.")
+
+        if is_dir:
+            console.print(f"📁 Local directory: {local_path}")
+            console.print(f"📁 Remote directory: {remote_path}")
+        else:
+            console.print(f"📄 Local file: {local_path}")
+            console.print(f"📄 Remote file: {remote_path}")
+
+        console.print("\nChoose an action:")
+        console.print("[bold green]l[/bold green] - Use Local version (keep your changes)")
+        console.print("[bold blue]r[/bold blue] - Use Remote version (use repository version)")
+        console.print("[bold red]s[/bold red] - Skip this item (leave both unchanged)")
+
+        while True:
+            try:
+                choice = input("\nEnter your choice (l/r/s): ").lower().strip()
+
+                if choice == 'l':
+                    console.print(f"[green]✅ Using local version of {item_name}[/green]")
+                    file_ops.remove_path(remote_path, is_dir)
+                    file_ops.copy_path(local_path, remote_path, is_dir)
+                    return "local"
+                elif choice == 'r':
+                    console.print(f"[blue]✅ Using remote version of {item_name}[/blue]")
+                    file_ops.remove_path(local_path, is_dir)
+                    file_ops.copy_path(remote_path, local_path, is_dir)
+                    return "remote"
+                elif choice == 's':
+                    console.print(f"[yellow]⏭️ Skipping {item_name}[/yellow]")
+                    return "skip"
+                else:
+                    console.print("[red]Invalid choice. Please enter 'l', 'r', or 's'.[/red]")
+            except (EOFError, KeyboardInterrupt):
+                console.print(f"\n[yellow]⏭️ Interrupted. Skipping {item_name}[/yellow]")
+                return "skip"
