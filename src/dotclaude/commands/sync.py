@@ -1,6 +1,7 @@
 """Sync command for managing repository synchronization."""
 
 from typing import Optional
+from collections import Counter
 
 import typer
 from rich.table import Table
@@ -17,6 +18,68 @@ app = typer.Typer(
     rich_markup_mode="rich",
     no_args_is_help=False,  # Allow default behavior
 )
+
+# Constants for operation display names
+OPERATION_DISPLAY_NAMES = {
+    "use_local": "used local version",
+    "use_remote": "used remote version",
+    "copy_to_repo": "copied to repo",
+    "copy_to_local": "copied to local",
+    "create": "created",
+    "update": "updated",
+    "skip": "skipped"
+}
+
+
+def _fix_typer_parameters(dry_run: bool, force: bool, develop: bool) -> tuple[bool, bool, bool]:
+    """Fix parameter types from Typer parsing issues.
+
+    Args:
+        dry_run: Raw dry_run parameter
+        force: Raw force parameter
+        develop: Raw develop parameter
+
+    Returns:
+        Tuple of fixed boolean parameters
+    """
+    return (
+        bool(dry_run) if dry_run is not None else False,
+        bool(force) if force != 'False' else False,
+        bool(develop) if develop != 'False' else False
+    )
+
+
+def _create_sync_options(
+    dry_run: bool,
+    force: bool,
+    develop: bool,
+    branch: Optional[str],
+    repo_url: Optional[str],
+    **kwargs
+) -> SyncOptions:
+    """Create SyncOptions with common parameter processing.
+
+    Args:
+        dry_run: Dry run flag
+        force: Force flag
+        develop: Develop branch flag
+        branch: Explicit branch name
+        repo_url: Repository URL
+        **kwargs: Additional options for SyncOptions
+
+    Returns:
+        Configured SyncOptions instance
+    """
+    fixed_dry_run, fixed_force, fixed_develop = _fix_typer_parameters(dry_run, force, develop)
+    target_branch = _determine_target_branch(fixed_develop, branch)
+
+    return SyncOptions(
+        dry_run=fixed_dry_run,
+        force=fixed_force,
+        branch=target_branch,
+        repository_url=repo_url,
+        **kwargs
+    )
 
 
 def _determine_target_branch(develop: bool, branch: Optional[str]) -> str:
@@ -39,6 +102,41 @@ def _determine_target_branch(develop: bool, branch: Optional[str]) -> str:
     return "develop" if develop else (branch or "main")
 
 
+def _display_success_result(result, operation_name: str) -> None:
+    """Display basic success information."""
+    console.print(f"[bold green]{operation_name} completed successfully![/bold green]")
+
+    # Show operation type for bidirectional sync
+    if hasattr(result, 'operation_type') and result.operation_type:
+        console.print(f"Operation: {result.operation_type}")
+
+    console.print(f"Items processed: {result.items_processed}")
+    console.print(f"Duration: {result.duration:.2f}s")
+
+
+def _display_operation_summary(result) -> None:
+    """Display summary of operations performed."""
+    if not (hasattr(result, 'operations') and result.operations):
+        return
+
+    operation_counts = Counter(op.operation for op in result.operations)
+    summary_parts = [
+        f"{count} {OPERATION_DISPLAY_NAMES.get(op_type, op_type)}"
+        for op_type, count in operation_counts.items()
+    ]
+
+    if summary_parts:
+        console.print(f"[dim]Summary: {', '.join(summary_parts)}[/dim]")
+
+
+def _display_failure_warnings(result) -> None:
+    """Display any failure warnings."""
+    if result.has_failures:
+        failure_summary = result.get_failure_summary()
+        if failure_summary:
+            console.print(f"[yellow]Warning: {failure_summary}[/yellow]")
+
+
 def _handle_sync_result(result, operation_name: str) -> None:
     """Handle and display sync operation results.
 
@@ -47,49 +145,9 @@ def _handle_sync_result(result, operation_name: str) -> None:
         operation_name: Name of the operation for display
     """
     if result.success:
-        console.print(f"[bold green]{operation_name} completed successfully![/bold green]")
-
-        # Show operation type for bidirectional sync
-        if hasattr(result, 'operation_type') and result.operation_type:
-            console.print(f"Operation: {result.operation_type}")
-
-        console.print(f"Items processed: {result.items_processed}")
-        console.print(f"Duration: {result.duration:.2f}s")
-
-        # Show operation summary
-        if hasattr(result, 'operations') and result.operations:
-            operation_counts = {}
-            for op in result.operations:
-                op_type = op.operation
-                if op_type not in operation_counts:
-                    operation_counts[op_type] = 0
-                operation_counts[op_type] += 1
-
-            if operation_counts:
-                summary_parts = []
-                for op_type, count in operation_counts.items():
-                    if op_type == "use_local":
-                        summary_parts.append(f"{count} used local version")
-                    elif op_type == "use_remote":
-                        summary_parts.append(f"{count} used remote version")
-                    elif op_type == "copy_to_repo":
-                        summary_parts.append(f"{count} copied to repo")
-                    elif op_type == "copy_to_local":
-                        summary_parts.append(f"{count} copied to local")
-                    elif op_type == "create":
-                        summary_parts.append(f"{count} created")
-                    elif op_type == "update":
-                        summary_parts.append(f"{count} updated")
-                    elif op_type == "skip":
-                        summary_parts.append(f"{count} skipped")
-
-                if summary_parts:
-                    console.print(f"[dim]Summary: {', '.join(summary_parts)}[/dim]")
-
-        if result.has_failures:
-            failure_summary = result.get_failure_summary()
-            if failure_summary:
-                console.print(f"[yellow]Warning: {failure_summary}[/yellow]")
+        _display_success_result(result, operation_name)
+        _display_operation_summary(result)
+        _display_failure_warnings(result)
     else:
         console.print(f"[bold red]{operation_name} failed: {result.error}[/bold red]")
         raise typer.Exit(1)
@@ -135,20 +193,9 @@ def sync_default(
             ConflictResolution.LOCAL if prefer == "local" else ConflictResolution.REMOTE
         )
 
-        # Fix parameter types from Typer parsing issues
-        dry_run = bool(dry_run) if dry_run is not None else False
-        force = bool(force) if force != 'False' else False
-        develop = bool(develop) if develop != 'False' else False
-
-        # Determine target branch using helper function
-        target_branch = _determine_target_branch(develop, branch)
-
-        options = SyncOptions(
-            conflict_resolution=conflict_resolution,
-            dry_run=dry_run,
-            force=force,
-            branch=target_branch,
-            repository_url=repo_url,
+        options = _create_sync_options(
+            dry_run, force, develop, branch, repo_url,
+            conflict_resolution=conflict_resolution
         )
 
         engine = SyncEngine()
@@ -202,16 +249,9 @@ def pull(
     """Pull changes from repository."""
     console.print("[bold green]Pulling from repository...[/bold green]")
 
-    # Fix parameter types from Typer parsing issues
-    dry_run = bool(dry_run) if dry_run is not None else False
-    force = bool(force) if force != 'False' else False
-    develop = bool(develop) if develop != 'False' else False
-
-    # Determine target branch using helper function
-    target_branch = _determine_target_branch(develop, branch)
-
-    options = SyncOptions(
-        pull_only=True, dry_run=dry_run, force=force, branch=target_branch, repository_url=repo_url
+    options = _create_sync_options(
+        dry_run, force, develop, branch, repo_url,
+        pull_only=True
     )
 
     engine = SyncEngine()
@@ -245,16 +285,9 @@ def push(
     """Push changes to repository."""
     console.print("[bold yellow]Pushing to repository...[/bold yellow]")
 
-    # Fix parameter types from Typer parsing issues
-    dry_run = bool(dry_run) if dry_run is not None else False
-    force = bool(force) if force != 'False' else False
-    develop = bool(develop) if develop != 'False' else False
-
-    # Determine target branch using helper function
-    target_branch = _determine_target_branch(develop, branch)
-
-    options = SyncOptions(
-        push_only=True, dry_run=dry_run, force=force, branch=target_branch, repository_url=repo_url
+    options = _create_sync_options(
+        dry_run, force, develop, branch, repo_url,
+        push_only=True
     )
 
     engine = SyncEngine()
