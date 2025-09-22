@@ -19,6 +19,52 @@ app = typer.Typer(
 )
 
 
+def _determine_target_branch(develop: bool, branch: Optional[str]) -> str:
+    """Determine the target branch from develop flag and branch option.
+
+    Args:
+        develop: Whether the develop flag is set
+        branch: Explicit branch name if provided
+
+    Returns:
+        The target branch name
+
+    Raises:
+        typer.Exit: If both develop and branch options are provided
+    """
+    if develop and branch:
+        console.print("Cannot use both --develop and --branch options")
+        raise typer.Exit(1)
+
+    return "develop" if develop else (branch or "main")
+
+
+def _handle_sync_result(result, operation_name: str) -> None:
+    """Handle and display sync operation results.
+
+    Args:
+        result: The sync result object
+        operation_name: Name of the operation for display
+    """
+    if result.success:
+        console.print(f"[bold green]{operation_name} completed successfully![/bold green]")
+
+        # Show operation type for bidirectional sync
+        if hasattr(result, 'operation_type') and result.operation_type:
+            console.print(f"Operation: {result.operation_type}")
+
+        console.print(f"Items processed: {result.items_processed}")
+        console.print(f"Duration: {result.duration:.2f}s")
+
+        if result.has_failures:
+            failure_summary = result.get_failure_summary()
+            if failure_summary:
+                console.print(f"[yellow]Warning: {failure_summary}[/yellow]")
+    else:
+        console.print(f"[bold red]{operation_name} failed: {result.error}[/bold red]")
+        raise typer.Exit(1)
+
+
 @app.callback(invoke_without_command=True)
 def sync_default(
     ctx: typer.Context,
@@ -38,6 +84,12 @@ def sync_default(
         "-d",
         help="Use develop branch (shortcut for --branch develop)",
     ),
+    repo_url: Optional[str] = typer.Option(
+        None,
+        "--repo-url",
+        "--repo",
+        help="Repository URL (supports HTTPS, SSH, or user/repo format)",
+    ),
 ) -> None:
     """
     Sync configuration with repository.
@@ -53,36 +105,21 @@ def sync_default(
             ConflictResolution.LOCAL if prefer == "local" else ConflictResolution.REMOTE
         )
 
-        # Determine target branch
-        if develop and branch:
-            console.print("Cannot use both --develop and --branch options")
-            raise typer.Exit(1)
-
-        target_branch = "develop" if develop else (branch or "main")
+        # Determine target branch using helper function
+        target_branch = _determine_target_branch(develop, branch)
 
         options = SyncOptions(
             conflict_resolution=conflict_resolution,
             dry_run=dry_run,
             force=force,
             branch=target_branch,
+            repository_url=repo_url,
         )
 
         engine = SyncEngine()
         result = engine.sync(options)
 
-        if result.success:
-            console.print("[bold green]Sync completed successfully![/bold green]")
-            console.print(f"Operation: {result.operation_type}")
-            console.print(f"Items processed: {result.items_processed}")
-            console.print(f"Duration: {result.duration:.2f}s")
-
-            if result.has_failures:
-                failure_summary = result.get_failure_summary()
-                if failure_summary:
-                    console.print(f"[yellow]Warning: {failure_summary}[/yellow]")
-        else:
-            console.print(f"[bold red]Sync failed: {result.error}[/bold red]")
-            raise typer.Exit(1)
+        _handle_sync_result(result, "Sync")
 
 
 @app.command()
@@ -120,36 +157,27 @@ def pull(
         "-d",
         help="Use develop branch (shortcut for --branch develop)",
     ),
+    repo_url: Optional[str] = typer.Option(
+        None,
+        "--repo-url",
+        "--repo",
+        help="Repository URL (supports HTTPS, SSH, or user/repo format)",
+    ),
 ) -> None:
     """Pull changes from repository."""
     console.print("[bold green]Pulling from repository...[/bold green]")
 
-    # Determine target branch
-    if develop and branch:
-        console.print("Cannot use both --develop and --branch options")
-        raise typer.Exit(1)
-
-    target_branch = "develop" if develop else (branch or "main")
+    # Determine target branch using helper function
+    target_branch = _determine_target_branch(develop, branch)
 
     options = SyncOptions(
-        pull_only=True, dry_run=dry_run, force=force, branch=target_branch
+        pull_only=True, dry_run=dry_run, force=force, branch=target_branch, repository_url=repo_url
     )
 
     engine = SyncEngine()
     result = engine.sync(options)
 
-    if result.success:
-        console.print("[bold green]Pull completed successfully![/bold green]")
-        console.print(f"Items processed: {result.items_processed}")
-        console.print(f"Duration: {result.duration:.2f}s")
-
-        if result.has_failures:
-            failure_summary = result.get_failure_summary()
-            if failure_summary:
-                console.print(f"[yellow]Warning: {failure_summary}[/yellow]")
-    else:
-        console.print(f"[bold red]Pull failed: {result.error}[/bold red]")
-        raise typer.Exit(1)
+    _handle_sync_result(result, "Pull")
 
 
 @app.command()
@@ -167,36 +195,27 @@ def push(
         "-d",
         help="Use develop branch (shortcut for --branch develop)",
     ),
+    repo_url: Optional[str] = typer.Option(
+        None,
+        "--repo-url",
+        "--repo",
+        help="Repository URL (supports HTTPS, SSH, or user/repo format)",
+    ),
 ) -> None:
     """Push changes to repository."""
     console.print("[bold yellow]Pushing to repository...[/bold yellow]")
 
-    # Determine target branch
-    if develop and branch:
-        console.print("Cannot use both --develop and --branch options")
-        raise typer.Exit(1)
-
-    target_branch = "develop" if develop else (branch or "main")
+    # Determine target branch using helper function
+    target_branch = _determine_target_branch(develop, branch)
 
     options = SyncOptions(
-        push_only=True, dry_run=dry_run, force=force, branch=target_branch
+        push_only=True, dry_run=dry_run, force=force, branch=target_branch, repository_url=repo_url
     )
 
     engine = SyncEngine()
     result = engine.sync(options)
 
-    if result.success:
-        console.print("[bold green]Push completed successfully![/bold green]")
-        console.print(f"Items processed: {result.items_processed}")
-        console.print(f"Duration: {result.duration:.2f}s")
-
-        if result.has_failures:
-            failure_summary = result.get_failure_summary()
-            if failure_summary:
-                console.print(f"[yellow]Warning: {failure_summary}[/yellow]")
-    else:
-        console.print(f"[bold red]Push failed: {result.error}[/bold red]")
-        raise typer.Exit(1)
+    _handle_sync_result(result, "Push")
 
 
 if __name__ == "__main__":
