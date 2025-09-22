@@ -137,6 +137,87 @@ def _display_failure_warnings(result) -> None:
             console.print(f"[yellow]Warning: {failure_summary}[/yellow]")
 
 
+def _get_item_sync_status(operation_type: str) -> tuple[str, str]:
+    """Get status and color for an item based on operation type."""
+    if operation_type == "skip":
+        return "In sync", "green"
+    elif operation_type == "resolve_conflict":
+        return "Conflict", "yellow"
+    elif operation_type == "copy_to_repo":
+        return "Needs push", "red"
+    elif operation_type == "copy_to_local":
+        return "Needs pull", "red"
+    else:
+        return operation_type, "dim"
+
+
+def _display_sync_status_tables(result, target_branch: str) -> None:
+    """Display sync status tables separated by global and local configurations."""
+    if not hasattr(result, 'operations') or not result.operations:
+        console.print("[dim]No items found. Check repository configuration.[/dim]")
+        return
+
+    # Separate global and local items
+    global_items = []
+    local_items = []
+
+    for operation in result.operations:
+        item_name = operation.item_name if hasattr(operation, 'item_name') else "Unknown"
+        status_text, status_color = _get_item_sync_status(operation.operation)
+
+        item_data = {
+            "name": item_name,
+            "status": f"[{status_color}]{status_text}[/{status_color}]",
+            "description": _get_item_description(item_name)
+        }
+
+        if item_name == "local-agents":
+            local_items.append(item_data)
+        else:
+            global_items.append(item_data)
+
+    # Display global configuration status
+    if global_items:
+        console.print(f"\n[bold blue]Global Configuration[/bold blue] [dim](from ~/.claude/)[/dim]")
+        global_table = Table(show_header=True, header_style="bold magenta", box=None)
+        global_table.add_column("Item", style="cyan", no_wrap=True)
+        global_table.add_column("Status", style="white")
+        global_table.add_column("Description", style="dim")
+
+        for item in global_items:
+            global_table.add_row(item["name"], item["status"], item["description"])
+
+        console.print(global_table)
+
+    # Display local configuration status
+    if local_items:
+        console.print(f"\n[bold blue]Local Configuration[/bold blue] [dim](from .claude/)[/dim]")
+        local_table = Table(show_header=True, header_style="bold magenta", box=None)
+        local_table.add_column("Item", style="cyan", no_wrap=True)
+        local_table.add_column("Status", style="white")
+        local_table.add_column("Description", style="dim")
+
+        for item in local_items:
+            local_table.add_row(item["name"], item["status"], item["description"])
+
+        console.print(local_table)
+
+    # Show summary
+    console.print()
+    _display_operation_summary(result)
+
+
+def _get_item_description(item_name: str) -> str:
+    """Get description for sync item."""
+    descriptions = {
+        "agents": "Global AI agents",
+        "commands": "Global commands",
+        "CLAUDE.md": "Global configuration file",
+        "local-agents": "Project-specific agents"
+    }
+    return descriptions.get(item_name, "Configuration item")
+
+
 def _handle_sync_result(result, operation_name: str) -> None:
     """Handle and display sync operation results.
 
@@ -238,49 +319,8 @@ def status(
     engine = SyncEngine()
     result = engine.sync(options)
 
-    # Create a status table
-    table = Table(title=f"Sync Status - {target_branch} branch", show_header=True, header_style="bold magenta")
-    table.add_column("Item", style="cyan", no_wrap=True)
-    table.add_column("Local Status", style="green")
-    table.add_column("Remote Status", style="yellow")
-    table.add_column("Sync Status", style="white")
-
-    if hasattr(result, 'operations') and result.operations:
-        for operation in result.operations:
-            item_name = operation.item_name if hasattr(operation, 'item_name') else "Unknown"
-
-            # Determine status based on operation
-            if operation.operation == "skip":
-                local_status = "Present"
-                remote_status = "Present"
-                sync_status = "[green]In sync[/green]"
-            elif operation.operation == "resolve_conflict":
-                local_status = "Modified"
-                remote_status = "Modified"
-                sync_status = "[yellow]Conflict[/yellow]"
-            elif operation.operation == "copy_to_repo":
-                local_status = "Present"
-                remote_status = "Missing"
-                sync_status = "[red]Needs push[/red]"
-            elif operation.operation == "copy_to_local":
-                local_status = "Missing"
-                remote_status = "Present"
-                sync_status = "[red]Needs pull[/red]"
-            else:
-                local_status = "Unknown"
-                remote_status = "Unknown"
-                sync_status = f"[dim]{operation.operation}[/dim]"
-
-            table.add_row(item_name, local_status, remote_status, sync_status)
-    else:
-        # Fallback if no operations data
-        table.add_row("No items found", "N/A", "N/A", "[dim]Check repository configuration[/dim]")
-
-    console.print(table)
-
-    # Show summary
-    if hasattr(result, 'operations') and result.operations:
-        _display_operation_summary(result)
+    # Create separate tables for global and local configurations
+    _display_sync_status_tables(result, target_branch)
 
 
 @app.command()
