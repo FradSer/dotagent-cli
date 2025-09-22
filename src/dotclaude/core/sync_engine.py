@@ -72,7 +72,6 @@ class SyncEngine:
                 return result
 
         except Exception as e:
-            console.print(f"[error]Sync failed: {e}[/error]")
             end_time = datetime.now()
             return SyncResult.create_failure(
                 operation_type="unknown",

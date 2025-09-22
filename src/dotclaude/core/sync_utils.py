@@ -75,7 +75,11 @@ class SyncFileOperations:
     @staticmethod
     def remove_path(path: Path, is_dir: bool) -> None:
         """Remove a file or directory."""
-        if is_dir:
+        if not path.exists():
+            return
+
+        # Double-check if it's actually a directory to handle edge cases
+        if is_dir or path.is_dir():
             shutil.rmtree(path)
         else:
             path.unlink()
@@ -117,11 +121,30 @@ class SyncContextManager:
             shutil.rmtree(working_dir, ignore_errors=True)
 
     def _is_dotclaude_repo(self, path: Path) -> bool:
-        """Check if the given path is the dotclaude repository."""
+        """Check if the given path is the target repository."""
         try:
-            # Check for .git directory and some expected files
+            from git import InvalidGitRepositoryError, Repo
+
+            # Check if it's a git repository
             git_dir = path / ".git"
-            readme = path / "README.md"
-            return git_dir.exists() and readme.exists()
-        except Exception:
+            if not git_dir.exists():
+                return False
+
+            # Check if remote origin matches our target repository
+            repo = Repo(path)
+            if not repo.remotes:
+                return False
+
+            origin = repo.remotes.origin
+            origin_url = origin.url
+
+            # Normalize both URLs for comparison
+            from dotclaude.core.config_manager import ConfigManager
+            config_manager = ConfigManager()
+            normalized_origin = config_manager._normalize_repository_url(origin_url)
+            normalized_target = config_manager._normalize_repository_url(self.repo_url)
+
+            return normalized_origin == normalized_target
+
+        except (Exception, InvalidGitRepositoryError):
             return False

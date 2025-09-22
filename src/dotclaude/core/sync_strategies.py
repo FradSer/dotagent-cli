@@ -299,7 +299,7 @@ class BidirectionalSyncStrategy(SyncStrategy):
         else:
             # Interactive resolution
             choice = self._resolve_conflict_interactive(
-                item_name, local_path, remote_path, file_ops
+                item_name, local_path, remote_path, is_dir, file_ops
             )
             return self._create_operation_result(
                 item_name, f"use_{choice}", True, f"Used {choice} version (interactive)"
@@ -373,7 +373,7 @@ class BidirectionalSyncStrategy(SyncStrategy):
         )
 
     def _resolve_conflict_interactive(
-        self, item_name: str, local_path: Path, remote_path: Path, file_ops
+        self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
     ) -> str:
         """Resolve conflict interactively."""
         # For now, just prefer remote (will implement interactive resolution later)
@@ -381,6 +381,6 @@ class BidirectionalSyncStrategy(SyncStrategy):
         console.print(
             "[info]Using remote version (interactive resolution not yet implemented)[/info]"
         )
-        file_ops.remove_path(local_path, local_path.is_dir())
-        file_ops.copy_path(remote_path, local_path, local_path.is_dir())
+        file_ops.remove_path(local_path, is_dir)
+        file_ops.copy_path(remote_path, local_path, is_dir)
         return "remote"
