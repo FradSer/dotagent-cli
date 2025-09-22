@@ -1,7 +1,6 @@
 """Strategy Factory for creating sync strategies."""
 
 from pathlib import Path
-from typing import Dict, Type
 
 from dotclaude.core.git_manager import GitManager
 from dotclaude.core.sync_strategies import (
@@ -29,7 +28,7 @@ class StrategyFactory:
         self.claude_dir = claude_dir
 
         # Strategy registry
-        self._strategies: Dict[str, Type[SyncStrategy]] = {
+        self._strategies: dict[str, type[SyncStrategy]] = {
             "pull": PullSyncStrategy,
             "push": PushSyncStrategy,
             "bidirectional": BidirectionalSyncStrategy,
@@ -75,7 +74,7 @@ class StrategyFactory:
         else:
             return "bidirectional"
 
-    def register_strategy(self, operation_type: str, strategy_class: Type[SyncStrategy]) -> None:
+    def register_strategy(self, operation_type: str, strategy_class: type[SyncStrategy]) -> None:
         """Register a new strategy type.
 
         Args:
