@@ -51,58 +51,62 @@ class SyncUseCase:
         start_time = datetime.now()
 
         try:
-            self._logger.info(f"Starting {options.operation_type} operation")
-
-            if options.dry_run:
-                self._console.print(
-                    f"[bold blue]Preview: {options.operation_type}[/bold blue]"
-                )
-            else:
-                self._console.print(
-                    f"[bold blue]Starting {options.operation_type}...[/bold blue]"
-                )
-
-            # Validate preconditions
-            self._validate_preconditions(options)
-
-            # Get all sync items
-            sync_items = self._sync_repo.get_sync_items()
-            self._logger.info(f"Found {len(sync_items)} sync items")
-
-            # Execute the sync operation
-            operations = self._execute_sync_operation(sync_items, options)
-
-            end_time = datetime.now()
-
-            # Create successful result
-            result = SyncResult.create_success(
-                operation_type=options.operation_type,
-                start_time=start_time,
-                end_time=end_time,
-                operations=operations,
-                branch=options.branch,
-                dry_run=options.dry_run,
-            )
-
-            self._log_result(result)
-            return result
-
+            return self._execute_with_error_handling(options, start_time)
         except Exception as e:
-            end_time = datetime.now()
-            self._logger.error(f"Sync operation failed: {e}")
+            return self._create_failure_result(options, start_time, e)
 
-            # Create failure result
-            result = SyncResult.create_failure(
-                operation_type=options.operation_type,
-                start_time=start_time,
-                end_time=end_time,
-                error=str(e),
-                branch=options.branch,
-                dry_run=options.dry_run,
-            )
+    def _execute_with_error_handling(self, options: SyncOptions, start_time: datetime) -> SyncResult:
+        """Execute sync with proper setup and validation."""
+        self._logger.info(f"Starting {options.operation_type} operation")
+        self._print_operation_header(options)
 
-            self._log_result(result)
-            return result
+        # Validate preconditions
+        self._validate_preconditions(options)
+
+        # Get all sync items
+        sync_items = self._sync_repo.get_sync_items()
+        self._logger.info(f"Found {len(sync_items)} sync items")
+
+        # Execute the sync operation
+        operations = self._execute_sync_operation(sync_items, options)
+        end_time = datetime.now()
+
+        # Create successful result
+        result = SyncResult.create_success(
+            operation_type=options.operation_type,
+            start_time=start_time,
+            end_time=end_time,
+            operations=operations,
+            branch=options.branch,
+            dry_run=options.dry_run,
+        )
+
+        self._log_result(result)
+        return result
+
+    def _print_operation_header(self, options: SyncOptions) -> None:
+        """Print appropriate header message for the operation."""
+        if options.dry_run:
+            self._console.print(f"[bold blue]Preview: {options.operation_type}[/bold blue]")
+        else:
+            self._console.print(f"[bold blue]Starting {options.operation_type}...[/bold blue]")
+
+    def _create_failure_result(self, options: SyncOptions, start_time: datetime, error: Exception) -> SyncResult:
+        """Create a failure result with proper error handling."""
+        end_time = datetime.now()
+        self._logger.error(f"Sync operation failed: {error}")
+
+        result = SyncResult.create_failure(
+            operation_type=options.operation_type,
+            start_time=start_time,
+            end_time=end_time,
+            error=str(error),
+            branch=options.branch,
+            dry_run=options.dry_run,
+        )
+
+        self._log_result(result)
+        return result
 
     def _validate_preconditions(self, options: SyncOptions) -> None:
         """Validate that preconditions are met for the sync operation."""
