@@ -1,1 +1,1 @@
-"""Command modules for dotclaude CLI."""
+"""Commands package - no longer used."""
