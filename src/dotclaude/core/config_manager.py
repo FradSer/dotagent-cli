@@ -11,10 +11,61 @@ from ruamel.yaml import YAML
 from dotclaude.domain.constants import YAMLConfig
 from dotclaude.utils.console import console
 
+
+class ConfigFileHandler:
+    """Handles file I/O operations for configuration files."""
+
+    def __init__(self, yaml_instance: YAML):
+        """Initialize with YAML instance.
+
+        Args:
+            yaml_instance: Configured YAML instance for reading/writing
+        """
+        self.yaml = yaml_instance
+
+    def load_config(self, config_path: Path) -> dict[str, Any]:
+        """Load configuration from file with error handling.
+
+        Args:
+            config_path: Path to configuration file
+
+        Returns:
+            Configuration dictionary, empty if file doesn't exist or has errors
+        """
+        if not config_path.exists():
+            return {}
+
+        try:
+            with open(config_path, encoding="utf-8") as f:
+                return self.yaml.load(f) or {}
+        except Exception as e:
+            console.print(
+                f"[warning]Failed to load config from {config_path}: {e}[/warning]"
+            )
+            return {}
+
+    def save_config(self, config_path: Path, config: dict[str, Any]) -> None:
+        """Save configuration to file with error handling.
+
+        Args:
+            config_path: Path to configuration file
+            config: Configuration dictionary to save
+
+        Raises:
+            Exception: If file writing fails
+        """
+        try:
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(config_path, "w", encoding="utf-8") as f:
+                self.yaml.dump(config, f)
+        except Exception as e:
+            raise Exception(f"Failed to write config to {config_path}: {e}")
+
+
 # Default configuration constants
 DEFAULT_CONFIG = {
     "sync": {
-        "repo_url": "git@github.com:FradSer/dotclaude.git",
+        "repo_url": "https://github.com/FradSer/dotclaude",
         "branch": "main",
         "prefer": "remote",
     },
@@ -41,6 +92,7 @@ class ConfigManager:
         self.yaml = YAML()
         self.yaml.preserve_quotes = True
         self.yaml.width = YAMLConfig.DEFAULT_WIDTH
+        self.file_handler = ConfigFileHandler(self.yaml)
 
     def get_config_path(self, scope: ConfigScope) -> Path:
         """Get the configuration file path for a given scope."""
@@ -83,26 +135,13 @@ class ConfigManager:
         config_path = self.get_config_path(scope)
 
         # Load existing config or create new
-        config = {}
-        if config_path.exists():
-            try:
-                with open(config_path, encoding="utf-8") as f:
-                    config = self.yaml.load(f) or {}
-            except Exception as e:
-                console.print(
-                    f"[warning]Failed to load config from {config_path}: {e}[/warning]"
-                )
+        config = self.file_handler.load_config(config_path)
 
         # Set nested key (support dot notation like 'sync.branch')
         self._set_nested_value(config, key, value)
 
         # Write back to file
-        try:
-            config_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(config_path, "w", encoding="utf-8") as f:
-                self.yaml.dump(config, f)
-        except Exception as e:
-            raise Exception(f"Failed to write config to {config_path}: {e}")
+        self.file_handler.save_config(config_path, config)
 
     def unset(self, key: str, scope: ConfigScope = ConfigScope.GLOBAL) -> None:
         """Remove configuration value from specified scope."""
@@ -112,14 +151,12 @@ class ConfigManager:
             return
 
         try:
-            with open(config_path, encoding="utf-8") as f:
-                config = self.yaml.load(f) or {}
+            config = self.file_handler.load_config(config_path)
 
             # Remove nested key
             if self._unset_nested_value(config, key):
                 # Write back to file
-                with open(config_path, "w", encoding="utf-8") as f:
-                    self.yaml.dump(config, f)
+                self.file_handler.save_config(config_path, config)
 
         except Exception as e:
             raise Exception(f"Failed to update config at {config_path}: {e}")
@@ -127,18 +164,7 @@ class ConfigManager:
     def get_all(self, scope: ConfigScope) -> dict[str, Any]:
         """Get all configuration values from a specific scope."""
         config_path = self.get_config_path(scope)
-
-        if not config_path.exists():
-            return {}
-
-        try:
-            with open(config_path, encoding="utf-8") as f:
-                return self.yaml.load(f) or {}
-        except Exception as e:
-            console.print(
-                f"[warning]Failed to load config from {config_path}: {e}[/warning]"
-            )
-            return {}
+        return self.file_handler.load_config(config_path)
 
     def get_all_scopes(self) -> dict[str, dict[str, Any]]:
         """Get configuration from all scopes."""
@@ -169,13 +195,8 @@ class ConfigManager:
         """Get value from a specific scope."""
         config_path = self.get_config_path(scope)
 
-        if not config_path.exists():
-            return None
-
         try:
-            with open(config_path, encoding="utf-8") as f:
-                config = self.yaml.load(f) or {}
-
+            config = self.file_handler.load_config(config_path)
             # Support dot notation for nested keys
             return self._get_nested_value(config, key)
 
@@ -239,13 +260,75 @@ class ConfigManager:
         default_config = self.get_default_config()
 
         try:
-            config_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(config_path, "w", encoding="utf-8") as f:
-                self.yaml.dump(default_config, f)
-
+            self.file_handler.save_config(config_path, default_config)
             console.print(
                 f"[success]Initialized default config at {config_path}[/success]"
             )
 
         except Exception as e:
             raise Exception(f"Failed to initialize config: {e}")
+
+    def get_effective_repository_url(self, override_url: Optional[str] = None) -> str:
+        """Get the effective repository URL with proper precedence.
+
+        Priority order:
+        1. Override URL parameter (highest priority)
+        2. Environment variable DOTCLAUDE_REPO_URL
+        3. Configuration file sync.repo_url
+        4. Default value (lowest priority)
+
+        Args:
+            override_url: Optional URL to override all other sources
+
+        Returns:
+            The effective repository URL to use
+        """
+        # 1. Command-line override (highest priority)
+        if override_url:
+            return self._normalize_repository_url(override_url)
+
+        # 2. Environment variable
+        env_url = os.getenv("DOTCLAUDE_REPO_URL")
+        if env_url:
+            return self._normalize_repository_url(env_url)
+
+        # 3. Configuration file
+        config_url = self.get("sync.repo_url")
+        if config_url:
+            return self._normalize_repository_url(config_url)
+
+        # 4. Default value
+        return self._normalize_repository_url(DEFAULT_CONFIG["sync"]["repo_url"])
+
+    def _normalize_repository_url(self, url: str) -> str:
+        """Normalize repository URL to handle different formats.
+
+        Supports:
+        - HTTPS: https://github.com/user/repo
+        - SSH: git@github.com:user/repo.git
+        - Short: user/repo (expands to HTTPS)
+
+        Args:
+            url: Repository URL in any supported format
+
+        Returns:
+            Normalized repository URL
+        """
+        url = url.strip()
+
+        # Handle short format (user/repo)
+        if "/" in url and not url.startswith(("http", "git@")):
+            # Assume it's user/repo format
+            if url.count("/") == 1:
+                return f"https://github.com/{url}"
+
+        # Handle SSH format - convert to HTTPS for broader compatibility
+        if url.startswith("git@github.com:"):
+            # Extract user/repo from git@github.com:user/repo.git
+            path = url[15:]  # Remove "git@github.com:"
+            if path.endswith(".git"):
+                path = path[:-4]  # Remove ".git"
+            return f"https://github.com/{path}"
+
+        # Return as-is for HTTPS URLs
+        return url
