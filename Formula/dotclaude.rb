@@ -3,8 +3,8 @@ class Dotclaude < Formula
 
   desc "Sync Claude Code configurations between local and remote repositories"
   homepage "https://github.com/FradSer/dotclaude-cli"
-  url "https://github.com/FradSer/dotclaude-cli/archive/refs/heads/main.tar.gz"
-  sha256 "135461dbb99e2835892442a3677767c6a72eaacf62fb48ff8e1af2219ca0fb93"
+  url "https://github.com/FradSer/dotclaude-cli/archive/refs/tags/v0.1.0.tar.gz"
+  sha256 "f2ee82a3c4686a705758e976e1dd8b1ade828f9304291726dd7526f3420f7a02"
   version "0.1.0"
   license "MIT"
 
