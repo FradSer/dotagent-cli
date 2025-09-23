@@ -1,23 +1,14 @@
 # DotClaude CLI
 
-> Modern CLI tool for managing Claude Code configuration with sync capabilities
+> Sync Claude Code configurations between local and remote repositories
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-black.svg)](https://github.com/psf/black)
 
-DotClaude is a powerful command-line interface that streamlines the management of Claude Code configurations, providing seamless synchronization between local and remote repositories with robust security validation.
+DotClaude syncs your Claude Code configurations (agents, commands, CLAUDE.md) between `~/.claude/` and GitHub repositories. By default, it syncs with [github.com/FradSer/dotclaude](https://github.com/FradSer/dotclaude), but you can specify your own repository. Project-specific agents can be selectively synced to `.claude/agents/`.
 
-## 🚀 Features
-
-- **🤖 Agent Management**: Create, configure, and manage AI agents for different projects
-- **🔄 Configuration Sync**: Bidirectional sync between local and remote Claude Code configurations
-- **🔗 Git Integration**: Native Git operations with repository management
-- **🔒 Security Validation**: Built-in security checks and configuration validation
-- **🏗️ Clean Architecture**: Domain-driven design with clear separation of concerns
-- **🧪 Test Coverage**: Comprehensive test suite with TDD approach
-
-## 📦 Installation
+## Installation
 
 ### From PyPI (when published)
 ```bash
@@ -26,190 +17,124 @@ pip install dotclaude
 
 ### Development Installation
 ```bash
-# Clone the repository
-git clone https://github.com/FradSer/dotclaude.git
-cd dotclaude
-
-# Install with uv (recommended)
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+git clone https://github.com/FradSer/dotclaude-cli.git
+cd dotclaude-cli
+uv venv && source .venv/bin/activate
 uv pip install -e ".[dev]"
-
-# Or with pip
-pip install -e ".[dev]"
 ```
 
-## 🛠️ Usage
+## Setup Configuration Repository
+
+Before using DotClaude, you need a configuration repository:
+
+1. **Fork the default repository**: https://github.com/FradSer/dotclaude
+2. **Customize your configurations** in the forked repository
+3. **Use your fork** when syncing:
+   ```bash
+   dotclaude sync --repo yourusername/dotclaude
+   ```
+
+Or use the default repository directly:
+```bash
+dotclaude sync  # Uses github.com/FradSer/dotclaude
+```
+
+## Usage
 
 ### Basic Commands
 
 ```bash
-# Show help
-dotclaude --help
-
-# Sync configuration with repository
+# Sync global configurations
 dotclaude sync
 
-# Manage AI agents
-dotclaude agent list
-dotclaude agent create --name "my-agent" --type local
+# Check sync status
+dotclaude status
 
-# Configure settings
-dotclaude config set key value
-dotclaude config get key
+# Include project-specific agents
+dotclaude sync --local
 ```
 
-### Sync Operations
+### Repository Options
 
 ```bash
-# Default sync with default repository (https://github.com/FradSer/dotclaude)
+# Use custom repository
+dotclaude sync --repo user/repo
+
+# Use specific branch
+dotclaude sync --branch develop
+
+# Preview changes
+dotclaude sync --dry-run
+
+# Force overwrite conflicts
+dotclaude sync --force
+```
+
+### What Gets Synced
+
+**Global Items** (always synced):
+- `~/.claude/agents/` ↔ `remote:agents/`
+- `~/.claude/commands/` ↔ `remote:commands/`
+- `~/.claude/CLAUDE.md` ↔ `remote:CLAUDE.md`
+
+**Project Items** (only with `--local`):
+- `remote:local-agents/*.md` → `.claude/agents/`
+
+When using `--local`, you'll see a checkbox interface to select which `.md` files to copy from the remote `local-agents/` directory.
+
+### Repository Formats
+
+All these formats work:
+- `https://github.com/user/repo`
+- `git@github.com:user/repo.git`
+- `user/repo`
+
+## Examples
+
+```bash
+# Basic sync
 dotclaude sync
 
-# Sync from remote to local
-dotclaude sync pull
+# Sync with project agents
+dotclaude sync --local
 
-# Sync from local to remote
-dotclaude sync push
+# Use custom repo and branch
+dotclaude sync --repo company/configs --branch main --local
 
-# Two-way sync with conflict resolution
-dotclaude sync --prefer local
+# Check what would change
+dotclaude status
+dotclaude sync --dry-run
 ```
 
-### Custom Repository Sync
-
-DotClaude supports syncing with any GitHub repository. You can specify the repository using multiple formats:
+## Development
 
 ```bash
-# Sync with custom repository using full HTTPS URL
-dotclaude sync --repo-url https://github.com/username/my-dotclaude
-
-# Sync with custom repository using short format
-dotclaude sync --repo username/my-dotclaude
-
-# Pull from custom repository with specific branch
-dotclaude pull --repo-url https://github.com/org/configs --branch develop
-
-# Push to custom repository
-dotclaude push --repo company/shared-configs --branch main
-```
-
-### Repository URL Configuration
-
-You can set a default repository URL using configuration:
-
-```bash
-# Set default repository URL
-dotclaude config set sync.repo_url https://github.com/myteam/dotclaude
-
-# View current repository URL
-dotclaude config get sync.repo_url
-
-# Use environment variable
-export DOTCLAUDE_REPO_URL=https://github.com/company/configs
-dotclaude sync
-```
-
-**URL Resolution Priority:**
-1. Command-line `--repo-url` option (highest priority)
-2. Environment variable `DOTCLAUDE_REPO_URL`
-3. Configuration file `sync.repo_url`
-4. Default: `https://github.com/FradSer/dotclaude` (lowest priority)
-
-**Supported URL Formats:**
-- **HTTPS**: `https://github.com/user/repo`
-- **SSH**: `git@github.com:user/repo.git` (auto-converts to HTTPS)
-- **Short**: `user/repo` (auto-expands to HTTPS)
-
-### Agent Management
-
-```bash
-# List all agents
-dotclaude agent list
-
-# Create a new agent
-dotclaude agent create --name "project-agent" --type local
-
-# Update agent configuration
-dotclaude agent update "project-agent" --config config.yaml
-
-# Remove an agent
-dotclaude agent remove "project-agent"
-```
-
-## 🏗️ Architecture
-
-DotClaude follows Clean Architecture principles with four distinct layers:
-
-- **Domain Layer**: Core business entities and rules
-- **Use Cases Layer**: Application business logic
-- **Interface Adapters**: CLI commands and external interfaces
-- **Infrastructure Layer**: External services and data persistence
-
-## 🧪 Development
-
-### Prerequisites
-
-- Python 3.9+
-- [uv](https://github.com/astral-sh/uv) (recommended) or pip
-
-### Setup Development Environment
-
-```bash
-# Install dependencies
+# Setup
 uv pip install -e ".[dev]"
 
-# Run tests
+# Test
 pytest
 
-# Run tests with coverage
-pytest --cov=dotclaude --cov-report=html
+# Quality checks
+black src tests && ruff check src tests && mypy src
 
-# Format code
-black src tests
-
-# Lint code
-ruff check src tests
-
-# Type checking
-mypy src
-```
-
-### Building
-
-```bash
-# Build wheel
+# Build
 uv build
-
-# Create standalone executable
-pyinstaller build.spec
 ```
 
-## 📋 Requirements
+## Requirements
 
-- Python 3.9 or higher
-- Git (for repository operations)
-- Dependencies managed via `uv.lock`
+- Python 3.9+
+- Git
+- GitHub repository with Claude Code configurations
 
-## 🤝 Contributing
+## License
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+MIT License - see [LICENSE](LICENSE) file.
 
-Please ensure your code follows the project's coding standards:
-- Use conventional commit messages
-- Maintain test coverage above 80%
-- Follow TDD practices
-- Run all quality checks before submitting
+## Links
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔗 Links
-
-- [GitHub Repository](https://github.com/FradSer/dotclaude)
-- [Issue Tracker](https://github.com/FradSer/dotclaude/issues)
+- [Tool Repository](https://github.com/FradSer/dotclaude-cli) - This CLI tool
+- [Default Config Repository](https://github.com/FradSer/dotclaude) - Fork this for your configs
+- [Issues](https://github.com/FradSer/dotclaude-cli/issues)
 - [Claude Code Documentation](https://docs.anthropic.com/claude/docs)

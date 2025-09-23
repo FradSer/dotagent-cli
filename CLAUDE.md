@@ -63,6 +63,17 @@ uv run dotclaude status --branch develop
 # Test with custom repository
 uv run dotclaude sync --repo user/repo --dry-run
 uv run dotclaude status --repo https://github.com/user/repo.git
+
+# Test with local agents
+uv run dotclaude sync --local --dry-run
+uv run dotclaude sync --local --force
+
+# Test conflict resolution (create local differences first)
+echo "# Local test" > ~/.claude/CLAUDE.md
+uv run dotclaude sync --branch develop
+
+# Test combined flags
+uv run dotclaude sync --local --branch develop --repo user/repo
 ```
 
 ### Build and Package
@@ -90,11 +101,15 @@ All commands support these consistent flags:
 - `--force` - Force overwrite without prompts (sync command)
 - `--branch <name>` - Use specific branch (default: main)
 - `--repo <url>` - Repository URL (HTTPS, SSH, or user/repo format)
+- `--local` - Include project-specific agents in sync (sync command)
 
 ### Important CLI Notes
 - The CLI uses **bidirectional sync** by default with interactive conflict resolution
 - When `--force` is used, conflicts are resolved in favor of remote (overwrites local)
 - Status command displays separated tables for global vs local configuration items
+- **Local-agents processing requires explicit opt-in** via `--local` flag
+- Without `--local`, only global items (agents, commands, CLAUDE.md) are processed
+- Local-agents provide interactive file selection (space to select .md files)
 
 ## Architecture
 
@@ -126,21 +141,44 @@ This project follows **Clean Architecture** with a simplified structure focused 
 - **Git Manager**: Repository operations and branch management
 - **Config Manager**: Application configuration with cascading scopes
 - **Interactive Conflict Resolution**: Uses inquirer for user-friendly conflict handling
+- **LocalAgentsService**: Handles interactive file selection for project-specific agents
 
 ### Sync Flow Architecture
 
 The sync process follows this pattern:
-1. **CLI** parses commands and creates `SyncOptions`
+1. **CLI** parses commands and creates `SyncOptions` (including `include_local_agents` flag)
 2. **SyncEngine** determines strategy based on options
-3. **Strategy** executes sync operations (pull/push/bidirectional)
-4. **Special handling** for `local-agents` (remote `local-agents/` → project `.claude/agents/`)
-5. **Git operations** commit and push changes when needed
+3. **Strategy** filters sync items based on `--local` flag
+4. **Global items** are always processed with conflict resolution prompts
+5. **Local-agents** (when enabled) shows interactive file selection for .md files
+6. **Git operations** commit and push changes when needed
 
 ### Sync Items Configuration
 
 Two types of sync items are handled differently:
-- **Global items**: `agents`, `commands`, `CLAUDE.md` (synced with `~/.claude/`)
-- **Local items**: `local-agents` (remote → project `.claude/agents/`)
+- **Global items**: `agents`, `commands`, `CLAUDE.md` (always processed, synced with `~/.claude/`)
+- **Local items**: `local-agents` (only when `--local` flag is used, remote → project `.claude/agents/`)
+
+#### Local-Agents File Selection Behavior
+- Scans remote `local-agents/` directory for `.md` files
+- Presents interactive checkbox interface for file selection
+- Files are not pre-selected (user must actively choose with spacebar)
+- Selected files are copied to project's `.claude/agents/` directory
+- `--force` flag bypasses selection and copies all available `.md` files
+
+### Two-Tier Interaction Model
+
+The CLI implements a sophisticated two-tier interaction system:
+
+1. **Global Items Conflict Resolution**: When local and remote versions differ
+   - Shows interactive choice: "Use local", "Use remote", or "Skip"
+   - Uses arrow keys for navigation, Enter to confirm
+   - Applies to `agents`, `commands`, `CLAUDE.md`
+
+2. **Local-Agents File Selection**: When `--local` flag is enabled
+   - Shows checkbox interface for individual `.md` file selection
+   - Uses spacebar to select/deselect, Enter to confirm
+   - No files are pre-selected (explicit user choice required)
 
 ## Testing Strategy
 
@@ -173,7 +211,7 @@ tests/
 - **Rich**: Terminal formatting and console output
 - **ruamel.yaml**: YAML parsing with comment preservation
 - **aiofiles**: Async file operations
-- **inquirer**: Interactive prompts for conflict resolution
+- **inquirer**: Interactive prompts for conflict resolution and file selection
 
 ## Configuration
 
