@@ -10,14 +10,14 @@ DotClaude syncs your Claude Code configurations (agents, commands, CLAUDE.md) be
 
 ## Installation
 
-### Via Homebrew (recommended)
-```bash
-brew install https://raw.githubusercontent.com/FradSer/dotclaude-cli/main/Formula/dotclaude.rb
-```
-
-### Via pip
+### Via pip (recommended)
 ```bash
 pip install dotclaude
+```
+
+### Via uv
+```bash
+uv tool install dotclaude
 ```
 
 ### Development Installation

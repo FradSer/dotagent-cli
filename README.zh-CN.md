@@ -10,14 +10,14 @@ DotClaude 在 `~/.claude/` 和 GitHub 仓库之间同步你的 Claude Code 配�
 
 ## 安装
 
-### 通过 Homebrew 安装（推荐）
-```bash
-brew install https://raw.githubusercontent.com/FradSer/dotclaude-cli/main/Formula/dotclaude.rb
-```
-
-### 通过 pip 安装
+### 通过 pip 安装（推荐）
 ```bash
 pip install dotclaude
+```
+
+### 通过 uv 安装
+```bash
+uv tool install dotclaude
 ```
 
 ### 开发环境安装
@@ -82,7 +82,7 @@ dotclaude sync --force
 - `~/.claude/commands/` ↔ `remote:commands/`
 - `~/.claude/CLAUDE.md` ↔ `remote:CLAUDE.md`
 
-**项目项目**（仅在使用 `--local` 时）：
+**项目项**（仅在使用 `--local` 时）：
 - `remote:local-agents/*.md` → `.claude/agents/`
 
 使用 `--local` 时，你会看到一个复选框界面来选择从远程 `local-agents/` 目录复制哪些 `.md` 文件。
