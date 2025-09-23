@@ -5,7 +5,7 @@ class Dotclaude < Formula
   homepage "https://github.com/FradSer/dotclaude-cli"
   url "https://github.com/FradSer/dotclaude-cli/archive/refs/heads/main.tar.gz"
   sha256 "135461dbb99e2835892442a3677767c6a72eaacf62fb48ff8e1af2219ca0fb93"
-  version "2.0.0"
+  version "0.1.0"
   license "MIT"
 
   depends_on "python@3.12"
