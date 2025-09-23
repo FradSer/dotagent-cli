@@ -10,7 +10,13 @@ DotClaude 在 `~/.claude/` 和 GitHub 仓库之间同步你的 Claude Code 配�
 
 ## 安装
 
-### 从 PyPI 安装（发布后可用）
+### 通过 Homebrew 安装（推荐）
+```bash
+brew tap FradSer/dotclaude
+brew install dotclaude
+```
+
+### 通过 pip 安装
 ```bash
 pip install dotclaude
 ```

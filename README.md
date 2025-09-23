@@ -10,7 +10,13 @@ DotClaude syncs your Claude Code configurations (agents, commands, CLAUDE.md) be
 
 ## Installation
 
-### From PyPI (when published)
+### Via Homebrew (recommended)
+```bash
+brew tap FradSer/dotclaude
+brew install dotclaude
+```
+
+### Via pip
 ```bash
 pip install dotclaude
 ```
