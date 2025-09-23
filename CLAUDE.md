@@ -59,6 +59,10 @@ uv run dotclaude --help
 uv run dotclaude status
 uv run dotclaude sync --dry-run
 uv run dotclaude status --branch develop
+
+# Test with custom repository
+uv run dotclaude sync --repo user/repo --dry-run
+uv run dotclaude status --repo https://github.com/user/repo.git
 ```
 
 ### Build and Package
@@ -82,10 +86,15 @@ dotclaude status   # Show sync status and differences
 
 ### Unified Global Flags
 All commands support these consistent flags:
-- `--dry-run` - Preview changes without applying
-- `--force` - Force overwrite without prompts
+- `--dry-run` - Preview changes without applying (sync command)
+- `--force` - Force overwrite without prompts (sync command)
 - `--branch <name>` - Use specific branch (default: main)
 - `--repo <url>` - Repository URL (HTTPS, SSH, or user/repo format)
+
+### Important CLI Notes
+- The CLI uses **bidirectional sync** by default with interactive conflict resolution
+- When `--force` is used, conflicts are resolved in favor of remote (overwrites local)
+- Status command displays separated tables for global vs local configuration items
 
 ## Architecture
 
@@ -150,7 +159,10 @@ tests/
 │   ├── use_cases/       # Business logic tests
 │   └── infrastructure/  # Infrastructure tests
 ├── integration/         # Integration tests
-└── conftest.py         # Pytest configuration and fixtures
+├── fixtures/            # Test fixtures and data
+├── conftest.py         # Pytest configuration and fixtures
+├── test_cli.py         # CLI integration tests
+└── test_config_manager.py  # Configuration management tests
 ```
 
 ## Key Dependencies
@@ -161,6 +173,7 @@ tests/
 - **Rich**: Terminal formatting and console output
 - **ruamel.yaml**: YAML parsing with comment preservation
 - **aiofiles**: Async file operations
+- **inquirer**: Interactive prompts for conflict resolution
 
 ## Configuration
 
