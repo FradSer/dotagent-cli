@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dotclaude"
-version = "2.0.0"
+version = "0.1.0"
 description = "Modern CLI tool for managing Claude Code configuration"
 authors = [{name = "FradSer", email = "frad@frad.io"}]
 readme = "README.md"

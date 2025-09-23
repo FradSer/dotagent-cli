@@ -3,8 +3,9 @@ class Dotclaude < Formula
 
   desc "Sync Claude Code configurations between local and remote repositories"
   homepage "https://github.com/FradSer/dotclaude-cli"
-  url "https://github.com/FradSer/dotclaude-cli/archive/refs/tags/v2.0.0.tar.gz"
-  sha256 "PLACEHOLDER_SHA256"  # Will be updated after creating a release
+  url "https://github.com/FradSer/dotclaude-cli/archive/refs/heads/main.tar.gz"
+  sha256 "135461dbb99e2835892442a3677767c6a72eaacf62fb48ff8e1af2219ca0fb93"
+  version "0.1.0"
   license "MIT"
 
   depends_on "python@3.12"
