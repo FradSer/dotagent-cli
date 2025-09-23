@@ -69,7 +69,7 @@ def _create_sync_options(
         force: Force flag
         branch: Explicit branch name
         repo_url: Repository URL
-        **kwargs: Additional options for SyncOptions
+        **kwargs: Additional options for SyncOptions (including include_local_agents)
 
     Returns:
         Configured SyncOptions instance
@@ -162,6 +162,9 @@ def sync(
         "--repo",
         help="Repository URL (supports HTTPS, SSH, or user/repo format)",
     ),
+    include_local_agents: bool = typer.Option(
+        False, "--local", help="Include project-specific agents in sync"
+    ),
 ) -> None:
     """Sync configuration with repository."""
     rich_console.print("[bold blue]Starting bidirectional sync...[/bold blue]")
@@ -171,7 +174,8 @@ def sync(
 
     options = _create_sync_options(
         dry_run, force, branch, repo,
-        conflict_resolution=conflict_resolution
+        conflict_resolution=conflict_resolution,
+        include_local_agents=include_local_agents
     )
 
     engine = SyncEngine()

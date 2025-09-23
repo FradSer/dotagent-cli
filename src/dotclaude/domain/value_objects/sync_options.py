@@ -52,6 +52,11 @@ class SyncOptions(BaseModel):
         default=None, description="Patterns to exclude"
     )
 
+    # Local agents handling
+    include_local_agents: bool = Field(
+        default=False, description="Include project-specific agents in sync"
+    )
+
     model_config = {
         "frozen": True,  # Make immutable
         "use_enum_values": True,
@@ -165,6 +170,7 @@ class SyncOptions(BaseModel):
             repository_url=self.repository_url,
             include_patterns=self.include_patterns,
             exclude_patterns=self.exclude_patterns,
+            include_local_agents=self.include_local_agents,
         )
 
     def with_dry_run(self, dry_run: bool = True) -> "SyncOptions":
@@ -180,6 +186,7 @@ class SyncOptions(BaseModel):
             repository_url=self.repository_url,
             include_patterns=self.include_patterns,
             exclude_patterns=self.exclude_patterns,
+            include_local_agents=self.include_local_agents,
         )
 
     def with_branch(self, branch: str) -> "SyncOptions":
@@ -195,6 +202,7 @@ class SyncOptions(BaseModel):
             repository_url=self.repository_url,
             include_patterns=self.include_patterns,
             exclude_patterns=self.exclude_patterns,
+            include_local_agents=self.include_local_agents,
         )
 
     def to_dict(self) -> dict:
@@ -210,4 +218,5 @@ class SyncOptions(BaseModel):
             "repository_url": self.repository_url,
             "include_patterns": self.include_patterns,
             "exclude_patterns": self.exclude_patterns,
+            "include_local_agents": self.include_local_agents,
         }

@@ -8,6 +8,7 @@ from dotclaude.core.git_manager import GitManager
 from dotclaude.domain.constants import Git
 from dotclaude.domain.value_objects import ConflictResolution, SyncOptions
 from dotclaude.domain.value_objects.sync_result import OperationResult, OperationStatus
+from dotclaude.infrastructure.services.interactive_service import InteractiveSyncService
 from dotclaude.utils.console import console
 
 
@@ -129,61 +130,69 @@ class SyncStrategy(ABC):
         # For now, just return True (will implement interactive prompts later)
         return True
 
+    def _filter_sync_items(self, options: SyncOptions) -> list[tuple[str, str]]:
+        """Filter sync items based on options."""
+        filtered_items = []
+
+        # Always include global items
+        for item_name, item_type in self.sync_items:
+            if item_name != "local-agents":
+                filtered_items.append((item_name, item_type))
+
+        # Only include local-agents if explicitly enabled
+        if options.include_local_agents:
+            for item_name, item_type in self.sync_items:
+                if item_name == "local-agents":
+                    filtered_items.append((item_name, item_type))
+                    break
+
+        return filtered_items
+
     def _process_local_agents_item(self, working_dir: Path, options: SyncOptions) -> OperationResult:
-        """Process local-agents item: remote/local-agents/ -> .claude/agents/"""
-        from dotclaude.core.sync_utils import SyncFileOperations
+        """Process local-agents item: remote/local-agents/ -> .claude/agents/ with file selection"""
+        from dotclaude.infrastructure.services.local_agents_service import LocalAgentsService
 
         remote_local_agents = working_dir / "local-agents"
         project_agents = Path.cwd() / ".claude" / "agents"
-        file_ops = SyncFileOperations()
 
         if not remote_local_agents.exists():
             return self._create_operation_result(
                 "local-agents", "skip", True, "No local-agents in remote repository"
             )
 
-        project_agents_exists = project_agents.exists()
+        # Find .md files in remote local-agents
+        md_files = list(remote_local_agents.glob("*.md"))
+        if not md_files:
+            return self._create_operation_result(
+                "local-agents", "skip", True, "No .md files found in remote local-agents"
+            )
 
         if options.dry_run:
-            if project_agents_exists:
-                if file_ops.paths_identical(remote_local_agents, project_agents, True):
-                    return self._handle_dry_run_operation(
-                        "local-agents", "skip", "no changes needed"
-                    )
-                else:
-                    return self._handle_dry_run_operation(
-                        "local-agents", "copy_to_local", "update project agents"
-                    )
-            else:
-                return self._handle_dry_run_operation(
-                    "local-agents", "copy_to_local", "create project agents"
-                )
+            return self._handle_dry_run_operation(
+                "local-agents", "copy_to_local", f"would process {len(md_files)} agent files"
+            )
 
-        # Create .claude directory if it doesn't exist
-        project_agents.parent.mkdir(parents=True, exist_ok=True)
+        # Use LocalAgentsService for file selection
+        agents_service = LocalAgentsService()
+        selected_files = agents_service.select_agent_files(remote_local_agents, options.force)
 
-        if project_agents_exists:
-            if file_ops.paths_identical(remote_local_agents, project_agents, True):
-                return self._create_operation_result(
-                    "local-agents", "skip", True, "Project agents are up to date"
-                )
-            else:
-                if options.force or self._prompt_overwrite("project agents"):
-                    console.print("Updating project agents from remote local-agents")
-                    file_ops.remove_path(project_agents, True)
-                    file_ops.copy_path(remote_local_agents, project_agents, True)
-                    return self._create_operation_result(
-                        "local-agents", "copy_to_local", True, "Updated project agents"
-                    )
-                else:
-                    return self._create_operation_result(
-                        "local-agents", "skip", True, "Skipped by user choice"
-                    )
-        else:
-            console.print("Creating project agents from remote local-agents")
-            file_ops.copy_path(remote_local_agents, project_agents, True)
+        if not selected_files:
             return self._create_operation_result(
-                "local-agents", "copy_to_local", True, "Created project agents"
+                "local-agents", "skip", True, "No agent files selected"
+            )
+
+        # Copy selected files
+        copied_count = agents_service.copy_selected_files(
+            remote_local_agents, project_agents, selected_files
+        )
+
+        if copied_count > 0:
+            return self._create_operation_result(
+                "local-agents", "copy_to_local", True, f"Copied {copied_count} agent file(s)"
+            )
+        else:
+            return self._create_operation_result(
+                "local-agents", "skip", True, "No files were copied"
             )
 
 
@@ -198,7 +207,10 @@ class PullSyncStrategy(SyncStrategy):
         # Ensure ~/.claude directory exists
         self.claude_dir.mkdir(exist_ok=True)
 
-        for item_name, item_type in self.sync_items:
+        # Filter sync items based on options
+        filtered_items = self._filter_sync_items(options)
+
+        for item_name, item_type in filtered_items:
             result = self._process_pull_item(working_dir, item_name, item_type, options)
             operations.append(result)
 
@@ -235,7 +247,10 @@ class PushSyncStrategy(SyncStrategy):
 
         os.chdir(working_dir)
 
-        for item_name, item_type in self.sync_items:
+        # Filter sync items based on options
+        filtered_items = self._filter_sync_items(options)
+
+        for item_name, item_type in filtered_items:
             result = self._process_push_item(working_dir, item_name, item_type, options)
             operations.append(result)
             if result.status == OperationStatus.SUCCESS and result.operation in [
@@ -287,7 +302,10 @@ class BidirectionalSyncStrategy(SyncStrategy):
         self.claude_dir.mkdir(exist_ok=True)
         os.chdir(working_dir)
 
-        for item_name, item_type in self.sync_items:
+        # Filter sync items based on options
+        filtered_items = self._filter_sync_items(options)
+
+        for item_name, item_type in filtered_items:
             result = self._process_bidirectional_item(
                 working_dir, item_name, item_type, options
             )
