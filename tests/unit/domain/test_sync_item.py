@@ -4,8 +4,8 @@ import pytest
 from pathlib import Path
 from datetime import datetime
 
-from dotclaude.domain.entities.sync_item import SyncItem, SyncItemType, SyncStatus
-from dotclaude.domain.exceptions import SyncValidationError
+from dotagent.domain.entities.sync_item import SyncItem, SyncItemType, SyncStatus
+from dotagent.domain.exceptions import SyncValidationError
 
 
 class TestSyncItem:
@@ -132,7 +132,11 @@ class TestSyncItem:
         )
 
         status = item.get_status()
-        assert status in [SyncStatus.LOCAL_NEWER, SyncStatus.REMOTE_NEWER, SyncStatus.DIFFERENT]
+        assert status in [
+            SyncStatus.LOCAL_NEWER,
+            SyncStatus.REMOTE_NEWER,
+            SyncStatus.DIFFERENT,
+        ]
 
     def test_needs_sync_when_out_of_sync(self, temp_dir: Path) -> None:
         """Test needs_sync when files are out of sync."""

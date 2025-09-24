@@ -4,10 +4,10 @@ import pytest
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-from dotclaude.use_cases.sync_use_case import SyncUseCase
-from dotclaude.domain.value_objects import SyncOptions, ConflictResolution
-from dotclaude.domain.entities.sync_item import SyncStatus
-from dotclaude.domain.exceptions import SyncValidationError
+from dotagent.use_cases.sync_use_case import SyncUseCase
+from dotagent.domain.value_objects import SyncOptions, ConflictResolution
+from dotagent.domain.entities.sync_item import SyncStatus
+from dotagent.domain.exceptions import SyncValidationError
 
 
 class TestSyncUseCase:
@@ -122,7 +122,9 @@ class TestSyncUseCase:
         all_mocks["security_service"].is_safe_url.return_value = True
 
         # Mock the sync item to have a conflict
-        with patch.object(sample_sync_item, 'get_status', return_value=SyncStatus.CONFLICT):
+        with patch.object(
+            sample_sync_item, "get_status", return_value=SyncStatus.CONFLICT
+        ):
             result = sync_use_case.execute(options)
 
         assert result.success is True
@@ -139,7 +141,9 @@ class TestSyncUseCase:
         all_mocks["security_service"].is_safe_url.return_value = True
 
         # Mock the sync item to have a conflict
-        with patch.object(sample_sync_item, 'get_status', return_value=SyncStatus.CONFLICT):
+        with patch.object(
+            sample_sync_item, "get_status", return_value=SyncStatus.CONFLICT
+        ):
             result = sync_use_case.execute(options)
 
         assert result.success is True
@@ -157,7 +161,9 @@ class TestSyncUseCase:
         all_mocks["console_service"].select.return_value = "pull (use remote)"
 
         # Mock the sync item to have a conflict
-        with patch.object(sample_sync_item, 'get_status', return_value=SyncStatus.CONFLICT):
+        with patch.object(
+            sample_sync_item, "get_status", return_value=SyncStatus.CONFLICT
+        ):
             result = sync_use_case.execute(options)
 
         assert result.success is True
@@ -209,7 +215,9 @@ class TestSyncUseCase:
         all_mocks["security_service"].is_safe_url.return_value = True
 
         # Mock the item as already in sync
-        with patch.object(sample_sync_item, 'get_status', return_value=SyncStatus.IN_SYNC):
+        with patch.object(
+            sample_sync_item, "get_status", return_value=SyncStatus.IN_SYNC
+        ):
             result = sync_use_case.execute(options)
 
         assert result.success is True

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from dotclaude.core.config_manager import ConfigManager, ConfigScope
+from dotagent.core.config_manager import ConfigManager, ConfigScope
 
 
 @pytest.fixture
@@ -32,16 +32,16 @@ def test_get_nested_value():
     """Test getting nested configuration values."""
     manager = ConfigManager()
     config = {
-        "sync": {
-            "branch": "main",
-            "repo_url": "https://github.com/test/repo.git"
-        },
-        "simple_key": "simple_value"
+        "sync": {"branch": "main", "repo_url": "https://github.com/test/repo.git"},
+        "simple_key": "simple_value",
     }
 
     assert manager._get_nested_value(config, "simple_key") == "simple_value"
     assert manager._get_nested_value(config, "sync.branch") == "main"
-    assert manager._get_nested_value(config, "sync.repo_url") == "https://github.com/test/repo.git"
+    assert (
+        manager._get_nested_value(config, "sync.repo_url")
+        == "https://github.com/test/repo.git"
+    )
     assert manager._get_nested_value(config, "nonexistent.key") is None
 
 
@@ -56,7 +56,9 @@ def test_set_nested_value():
     manager._set_nested_value(config, "sync.branch", "develop")
     assert config["sync"]["branch"] == "develop"
 
-    manager._set_nested_value(config, "sync.repo_url", "https://github.com/test/repo.git")
+    manager._set_nested_value(
+        config, "sync.repo_url", "https://github.com/test/repo.git"
+    )
     assert config["sync"]["repo_url"] == "https://github.com/test/repo.git"
 
 
@@ -64,11 +66,8 @@ def test_unset_nested_value():
     """Test removing nested configuration values."""
     manager = ConfigManager()
     config = {
-        "sync": {
-            "branch": "main",
-            "repo_url": "https://github.com/test/repo.git"
-        },
-        "simple_key": "simple_value"
+        "sync": {"branch": "main", "repo_url": "https://github.com/test/repo.git"},
+        "simple_key": "simple_value",
     }
 
     # Remove simple key
