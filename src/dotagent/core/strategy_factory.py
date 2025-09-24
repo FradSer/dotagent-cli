@@ -2,14 +2,14 @@
 
 from pathlib import Path
 
-from dotclaude.core.git_manager import GitManager
-from dotclaude.core.sync_strategies import (
+from dotagent.core.git_manager import GitManager
+from dotagent.core.sync_strategies import (
     BidirectionalSyncStrategy,
     PullSyncStrategy,
     PushSyncStrategy,
     SyncStrategy,
 )
-from dotclaude.domain.value_objects import SyncOptions
+from dotagent.domain.value_objects import SyncOptions
 
 
 class StrategyFactory:
@@ -52,9 +52,7 @@ class StrategyFactory:
         if strategy_class is None:
             raise ValueError(f"Unknown operation type: {operation_type}")
 
-        strategy = strategy_class(
-            self.git_manager, self.sync_items, self.claude_dir
-        )
+        strategy = strategy_class(self.git_manager, self.sync_items, self.claude_dir)
 
         return operation_type, strategy
 
@@ -74,7 +72,9 @@ class StrategyFactory:
         else:
             return "bidirectional"
 
-    def register_strategy(self, operation_type: str, strategy_class: type[SyncStrategy]) -> None:
+    def register_strategy(
+        self, operation_type: str, strategy_class: type[SyncStrategy]
+    ) -> None:
         """Register a new strategy type.
 
         Args:

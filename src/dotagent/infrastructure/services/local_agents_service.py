@@ -13,7 +13,9 @@ class LocalAgentsService:
     def __init__(self):
         self.console = Console()
 
-    def select_agent_files(self, local_agents_path: Path, force: bool = False) -> List[Path]:
+    def select_agent_files(
+        self, local_agents_path: Path, force: bool = False
+    ) -> List[Path]:
         """
         Prompt user to select which agent files to sync.
 
@@ -56,10 +58,10 @@ class LocalAgentsService:
 
         questions = [
             inquirer.Checkbox(
-                'selected_files',
+                "selected_files",
                 message="Select agent files",
                 choices=choices,
-                default=[]  # No files pre-selected by default
+                default=[],  # No files pre-selected by default
             )
         ]
 
@@ -69,21 +71,25 @@ class LocalAgentsService:
                 self.console.print("[yellow]Agent file selection cancelled[/yellow]")
                 return []
 
-            selected_choice_texts = answers.get('selected_files', [])
+            selected_choice_texts = answers.get("selected_files", [])
 
             if not selected_choice_texts:
                 self.console.print("[yellow]No agent files selected[/yellow]")
                 return []
 
             # Convert selected choice texts back to file paths
-            selected_files = [choice_to_path[choice] for choice in selected_choice_texts]
+            selected_files = [
+                choice_to_path[choice] for choice in selected_choice_texts
+            ]
             return selected_files
 
         except KeyboardInterrupt:
             self.console.print("\n[yellow]Agent file selection cancelled[/yellow]")
             return []
 
-    def copy_selected_files(self, source_dir: Path, target_dir: Path, selected_files: List[Path]) -> int:
+    def copy_selected_files(
+        self, source_dir: Path, target_dir: Path, selected_files: List[Path]
+    ) -> int:
         """
         Copy selected agent files from source to target directory.
 
@@ -109,7 +115,7 @@ class LocalAgentsService:
                 target_file = target_dir / relative_path
 
                 # Copy file content
-                target_file.write_text(file_path.read_text(), encoding='utf-8')
+                target_file.write_text(file_path.read_text(), encoding="utf-8")
                 copied_count += 1
                 self.console.print(f"[green]Copied: {relative_path}[/green]")
 

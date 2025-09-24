@@ -6,7 +6,7 @@ from pathlib import Path
 import inquirer
 from rich.console import Console
 
-from dotclaude.domain.constants import SyncItems
+from dotagent.domain.constants import SyncItems
 
 
 class InteractiveSyncService:
@@ -15,7 +15,12 @@ class InteractiveSyncService:
     def __init__(self):
         self.console = Console()
 
-    def select_sync_items(self, working_dir: Path, force: bool = False, operation_type: str = "bidirectional") -> List[Tuple[str, str]]:
+    def select_sync_items(
+        self,
+        working_dir: Path,
+        force: bool = False,
+        operation_type: str = "bidirectional",
+    ) -> List[Tuple[str, str]]:
         """
         Prompt user to select which sync items to process.
 
@@ -75,10 +80,10 @@ class InteractiveSyncService:
 
         questions = [
             inquirer.Checkbox(
-                'selected_items',
+                "selected_items",
                 message="Select sync items",
                 choices=choices,
-                default=default_choices
+                default=default_choices,
             )
         ]
 
@@ -88,14 +93,16 @@ class InteractiveSyncService:
                 self.console.print("[yellow]Sync cancelled by user[/yellow]")
                 return []
 
-            selected_choice_texts = answers.get('selected_items', [])
+            selected_choice_texts = answers.get("selected_items", [])
 
             if not selected_choice_texts:
                 self.console.print("[yellow]No items selected for sync[/yellow]")
                 return []
 
             # Convert selected choice texts back to (item_name, item_type) tuples
-            selected_items = [choice_to_item[choice] for choice in selected_choice_texts]
+            selected_items = [
+                choice_to_item[choice] for choice in selected_choice_texts
+            ]
 
             # Debug output
             self.console.print(f"[dim]Selected choices: {selected_choice_texts}[/dim]")
@@ -107,7 +114,9 @@ class InteractiveSyncService:
             self.console.print("\n[yellow]Sync cancelled by user[/yellow]")
             return []
 
-    def _get_all_available_items(self, working_dir: Path, operation_type: str = "bidirectional") -> List[Tuple[str, str]]:
+    def _get_all_available_items(
+        self, working_dir: Path, operation_type: str = "bidirectional"
+    ) -> List[Tuple[str, str]]:
         """Get all available sync items based on operation type."""
         from pathlib import Path
 
@@ -146,6 +155,6 @@ class InteractiveSyncService:
             "agents": "Global AI agents",
             "commands": "Global commands",
             "CLAUDE.md": "Global configuration file",
-            "local-agents": "Project-specific agents"
+            "local-agents": "Project-specific agents",
         }
         return descriptions.get(item_name, "Configuration item")

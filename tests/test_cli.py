@@ -3,7 +3,7 @@
 import pytest
 from typer.testing import CliRunner
 
-from dotclaude.cli import app
+from dotagent.cli import app
 
 
 def test_cli_version():

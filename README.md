@@ -1,47 +1,56 @@
-# DotClaude CLI
+# DotAgent CLI ![](https://img.shields.io/badge/A%20FRAD%20PRODUCT-green)
 
-> Sync Claude Code configurations between local and remote repositories
+[![Twitter Follow](https://img.shields.io/twitter/follow/FradSer?style=social)](https://twitter.com/FradSer)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Configuration-blue.svg)](https://docs.anthropic.com/en/docs/claude-code)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Code Style](https://img.shields.io/badge/code%20style-black-black.svg)](https://github.com/psf/black)
+**English | [中文](README.zh-CN.md)**
 
-DotClaude syncs your Claude Code configurations (agents, commands, CLAUDE.md) between `~/.claude/` and GitHub repositories. By default, it syncs with [github.com/FradSer/dotclaude](https://github.com/FradSer/dotclaude), but you can specify your own repository. Project-specific agents can be selectively synced to `.claude/agents/`.
+> Universal CLI tool for managing AI agent configurations across different platforms - currently supports Claude Code with planned support for GitHub Copilot, Cursor, and more
+
+DotAgent is a universal CLI tool for managing AI agent configurations. Currently supports Claude Code with robust bidirectional synchronization between local (`~/.claude/`) and remote GitHub repositories. Future versions will add support for GitHub Copilot, Cursor, and other AI development tools.
+
+## 🎯 Current Support
+
+**Claude Code** - Full synchronization support:
+- Agents, commands, and CLAUDE.md configuration files
+- Bidirectional sync with intelligent conflict resolution
+- Project-specific agent management
 
 ## Installation
 
 ### Via pip (recommended)
 ```bash
-pip install dotclaude
+pip install dotclaude-cli
 ```
 
 ### Via uv
 ```bash
-uv tool install dotclaude
+uv tool install dotclaude-cli
 ```
 
 ### Development Installation
 ```bash
-git clone https://github.com/FradSer/dotclaude-cli.git
-cd dotclaude-cli
+git clone https://github.com/FradSer/dotagent-cli.git
+cd dotagent-cli
 uv venv && source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
 
 ## Setup Configuration Repository
 
-Before using DotClaude, you need a configuration repository:
+Before using DotAgent, you need a configuration repository:
 
 1. **Fork the default repository**: https://github.com/FradSer/dotclaude
 2. **Customize your configurations** in the forked repository
 3. **Use your fork** when syncing:
    ```bash
-   dotclaude sync --repo yourusername/dotclaude
+   dotagent claude sync --repo yourusername/dotclaude
    ```
 
 Or use the default repository directly:
 ```bash
-dotclaude sync  # Uses github.com/FradSer/dotclaude
+dotagent claude sync  # Uses github.com/FradSer/dotclaude
 ```
 
 ## Usage
@@ -49,30 +58,30 @@ dotclaude sync  # Uses github.com/FradSer/dotclaude
 ### Basic Commands
 
 ```bash
-# Sync global configurations
-dotclaude sync
+# Sync global Claude configurations
+dotagent claude sync
 
 # Check sync status
-dotclaude status
+dotagent claude status
 
 # Include project-specific agents
-dotclaude sync --local
+dotagent claude sync --local
 ```
 
 ### Repository Options
 
 ```bash
 # Use custom repository
-dotclaude sync --repo user/repo
+dotagent claude sync --repo user/repo
 
 # Use specific branch
-dotclaude sync --branch develop
+dotagent claude sync --branch develop
 
 # Preview changes
-dotclaude sync --dry-run
+dotagent claude sync --dry-run
 
 # Force overwrite conflicts
-dotclaude sync --force
+dotagent claude sync --force
 ```
 
 ### What Gets Synced
@@ -98,17 +107,17 @@ All these formats work:
 
 ```bash
 # Basic sync
-dotclaude sync
+dotagent claude sync
 
 # Sync with project agents
-dotclaude sync --local
+dotagent claude sync --local
 
 # Use custom repo and branch
-dotclaude sync --repo company/configs --branch main --local
+dotagent claude sync --repo company/configs --branch main --local
 
 # Check what would change
-dotclaude status
-dotclaude sync --dry-run
+dotagent claude status
+dotagent claude sync --dry-run
 ```
 
 ## Development
@@ -139,7 +148,7 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ## Links
 
-- [Tool Repository](https://github.com/FradSer/dotclaude-cli) - This CLI tool
+- [Tool Repository](https://github.com/FradSer/dotagent-cli) - This CLI tool
 - [Default Config Repository](https://github.com/FradSer/dotclaude) - Fork this for your configs
-- [Issues](https://github.com/FradSer/dotclaude-cli/issues)
+- [Issues](https://github.com/FradSer/dotagent-cli/issues)
 - [Claude Code Documentation](https://docs.anthropic.com/claude/docs)

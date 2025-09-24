@@ -134,10 +134,14 @@ class ErrorRecovery:
         if self._console.confirm(f"Try to fix read permissions for {resource_path}?"):
             try:
                 os.chmod(resource_path, self.FILE_READ_PERMISSIONS)
-                self._console.print_success(f"Fixed read permissions for {resource_path}")
+                self._console.print_success(
+                    f"Fixed read permissions for {resource_path}"
+                )
                 return True
             except Exception:
-                self._console.print_error("Failed to fix permissions (try running with sudo)")
+                self._console.print_error(
+                    "Failed to fix permissions (try running with sudo)"
+                )
         return False
 
     def _try_fix_write_permissions(self, resource_path: Path) -> bool:
@@ -149,21 +153,33 @@ class ErrorRecovery:
         # Then try to fix permissions
         if self._console.confirm(f"Try to fix write permissions for {resource_path}?"):
             try:
-                permissions = self.DIR_PERMISSIONS if resource_path.is_dir() else self.FILE_WRITE_PERMISSIONS
+                permissions = (
+                    self.DIR_PERMISSIONS
+                    if resource_path.is_dir()
+                    else self.FILE_WRITE_PERMISSIONS
+                )
                 os.chmod(resource_path, permissions)
-                self._console.print_success(f"Fixed write permissions for {resource_path}")
+                self._console.print_success(
+                    f"Fixed write permissions for {resource_path}"
+                )
                 return True
             except Exception:
-                self._console.print_error("Failed to fix permissions (try running with sudo)")
+                self._console.print_error(
+                    "Failed to fix permissions (try running with sudo)"
+                )
         return False
 
     def _try_create_missing_directory(self, resource_path: Path) -> bool:
         """Try to create missing parent directory."""
         if not resource_path.parent.exists():
-            if self._console.confirm(f"Create missing directory {resource_path.parent}?"):
+            if self._console.confirm(
+                f"Create missing directory {resource_path.parent}?"
+            ):
                 try:
                     resource_path.parent.mkdir(parents=True, exist_ok=True)
-                    self._console.print_success(f"Created directory: {resource_path.parent}")
+                    self._console.print_success(
+                        f"Created directory: {resource_path.parent}"
+                    )
                     return True
                 except Exception:
                     pass
@@ -247,7 +263,9 @@ class ErrorRecovery:
         """Attempt to recover from network errors."""
         if self._console.confirm("Network error detected. Retry operation?"):
             # Wait a moment before suggesting retry
-            self._console.print(f"Waiting {self.RETRY_DELAY_SECONDS} seconds before retry...")
+            self._console.print(
+                f"Waiting {self.RETRY_DELAY_SECONDS} seconds before retry..."
+            )
             time.sleep(self.RETRY_DELAY_SECONDS)
             return False  # Cannot actually retry here, but indicate retry is possible
 
@@ -256,7 +274,9 @@ class ErrorRecovery:
     def _is_network_error(self, exception: Exception) -> bool:
         """Check if an exception is network-related."""
         error_message = str(exception).lower()
-        return any(indicator in error_message for indicator in self.NETWORK_ERROR_INDICATORS)
+        return any(
+            indicator in error_message for indicator in self.NETWORK_ERROR_INDICATORS
+        )
 
     def _get_default_config_values(self) -> dict[str, str]:
         """Get default configuration values for common settings."""

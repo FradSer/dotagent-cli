@@ -7,18 +7,18 @@ from pathlib import Path
 from typing import Generator, Dict, Any
 from unittest.mock import Mock, MagicMock
 
-from dotclaude.domain.entities import SyncItem, Agent, Repository
-from dotclaude.domain.entities.sync_item import SyncItemType
-from dotclaude.domain.entities.agent import AgentType
-from dotclaude.domain.value_objects import SyncOptions, ConflictResolution
-from dotclaude.interfaces.repositories import (
+from dotagent.domain.entities import SyncItem, Agent, Repository
+from dotagent.domain.entities.sync_item import SyncItemType
+from dotagent.domain.entities.agent import AgentType
+from dotagent.domain.value_objects import SyncOptions, ConflictResolution
+from dotagent.interfaces.repositories import (
     SyncRepository,
     AgentRepository,
     ConfigRepository,
     GitRepository,
     FileSystemRepository,
 )
-from dotclaude.interfaces.services import (
+from dotagent.interfaces.services import (
     ConsoleService,
     ValidationService,
     SecurityService,
@@ -55,13 +55,15 @@ def sample_agent(temp_dir: Path) -> Agent:
     """Create a sample agent for testing."""
     agent_path = temp_dir / "agents" / "test-agent.yaml"
     agent_path.parent.mkdir(parents=True, exist_ok=True)
-    agent_path.write_text("""
+    agent_path.write_text(
+        """
 name: test-agent
 description: A test agent for unit testing
 specializations:
   - testing
   - validation
-""".strip())
+""".strip()
+    )
 
     return Agent(
         name="test-agent",
@@ -261,13 +263,15 @@ class TestFixtures:
         for i in range(count):
             agent_path = temp_dir / "agents" / f"agent-{i}.yaml"
             agent_path.parent.mkdir(parents=True, exist_ok=True)
-            agent_path.write_text(f"""
+            agent_path.write_text(
+                f"""
 name: agent-{i}
 description: Test agent {i}
 specializations:
   - test
   - automation
-""".strip())
+""".strip()
+            )
 
             agents.append(
                 Agent(

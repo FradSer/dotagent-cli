@@ -7,7 +7,7 @@ from typing import Optional
 from git import Repo
 from git.exc import GitCommandError, InvalidGitRepositoryError
 
-from dotclaude.utils.console import console
+from dotagent.utils.console import console
 
 
 class GitManager:

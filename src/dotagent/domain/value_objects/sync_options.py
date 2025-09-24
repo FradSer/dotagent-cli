@@ -101,8 +101,8 @@ class SyncOptions(BaseModel):
         # 3. Short format: user/repo (expanded by ConfigManager)
         url_pattern = re.compile(
             r"^(https?|git|ssh)://[^\s/$.?#].[^\s]*$|"  # Full URLs
-            r"^git@[^\s:]+:[^\s]+\.git$|"              # SSH URLs
-            r"^[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+$"     # Short format: user/repo
+            r"^git@[^\s:]+:[^\s]+\.git$|"  # SSH URLs
+            r"^[a-zA-Z0-9\-_.]+/[a-zA-Z0-9\-_.]+$"  # Short format: user/repo
         )
 
         if not url_pattern.match(v):
