@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-09-24
+
+### Fixed
+
+- Project naming consistency throughout all configuration files
+- Email address updated from frad@frad.io to fradser@gmail.com
+- Package name unified to dotagent-cli across all documentation
+- Installation instructions corrected in README files
+
 ## [0.1.2] - 2025-09-24
 
 ### Added
@@ -85,7 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Problematic is_flag option from Typer configuration
 - Magic numbers replaced with named constants
 
-[unreleased]: https://github.com/FradSer/dotagent-cli/compare/v0.1.2...HEAD
+[unreleased]: https://github.com/FradSer/dotagent-cli/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/FradSer/dotagent-cli/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/FradSer/dotagent-cli/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/FradSer/dotagent-cli/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/FradSer/dotagent-cli/releases/tag/v0.1.0
