@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dotclaude-cli"
-version = "0.1.1"
+version = "0.1.2"
 description = "Universal CLI tool for managing AI agent configurations across different platforms"
 authors = [{name = "FradSer", email = "frad@frad.io"}]
 readme = "README.md"
