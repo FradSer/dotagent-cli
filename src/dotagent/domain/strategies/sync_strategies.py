@@ -4,18 +4,22 @@ import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from dotagent.core.git_manager import GitManager
 from dotagent.domain.constants import Git
+from dotagent.domain.interfaces import GitManagerInterface
 from dotagent.domain.value_objects import ConflictResolution, SyncOptions
 from dotagent.domain.value_objects.sync_result import OperationResult, OperationStatus
-from dotagent.infrastructure.services.interactive_service import InteractiveSyncService
 from dotagent.utils.console import console
 
 
 class SyncStrategy(ABC):
     """Abstract base class for sync strategies."""
 
-    def __init__(self, git_manager: GitManager, sync_items: list, claude_dir: Path):
+    def __init__(
+        self,
+        git_manager: GitManagerInterface,
+        sync_items: list,
+        claude_dir: Path
+    ):
         self.git_manager = git_manager
         self.sync_items = sync_items
         self.claude_dir = claude_dir
@@ -60,7 +64,7 @@ class SyncStrategy(ABC):
         options: SyncOptions,
     ) -> OperationResult:
         """Execute a file operation (create or update) with unified logic."""
-        from dotagent.core.sync_utils import SyncFileOperations
+        from dotagent.use_cases.sync_utils import SyncFileOperations
 
         file_ops = SyncFileOperations()
 
@@ -376,7 +380,7 @@ class BidirectionalSyncStrategy(SyncStrategy):
         self, working_dir: Path, item_name: str, item_type: str, options: SyncOptions
     ) -> OperationResult:
         """Process a single item for bidirectional operation."""
-        from dotagent.core.sync_utils import SyncFileOperations
+        from dotagent.use_cases.sync_utils import SyncFileOperations
 
         # Special handling for local-agents: remote/local-agents/ -> .claude/agents/
         if item_name == "local-agents":
@@ -539,8 +543,9 @@ class BidirectionalSyncStrategy(SyncStrategy):
             console.print(f"Remote file: {remote_path}")
 
     def _prompt_user_choice(self, item_name: str) -> int:
-        """Prompt user for conflict resolution choice."""
+        """Prompt user for conflict resolution choice with arrow keys."""
         import inquirer
+        import sys
 
         choices = [
             "Use Local version (keep your changes)",
@@ -548,24 +553,43 @@ class BidirectionalSyncStrategy(SyncStrategy):
             "Skip this item (leave both unchanged)",
         ]
 
+        # First try inquirer for arrow key navigation
         try:
             questions = [
                 inquirer.List(
                     "action",
-                    message=f"Choose action for {item_name}",
+                    message=f"Choose action for {item_name} (use arrow keys)",
                     choices=choices,
                     default=choices[0],
                 ),
             ]
+
             answers = inquirer.prompt(questions)
 
             if answers is None:  # User pressed Ctrl+C
-                return -1  # Signal interruption
+                return -1
 
             return choices.index(answers["action"])
 
-        except (EOFError, KeyboardInterrupt):
-            return -1  # Signal interruption
+        except Exception:
+            # Fallback to numbered choice if inquirer fails
+            console.print(f"\n[bold yellow]Choose action for {item_name}:[/bold yellow]")
+            console.print("[dim]Arrow keys not available, using number selection:[/dim]")
+            for i, choice in enumerate(choices, 1):
+                console.print(f"  [cyan]{i}.[/cyan] {choice}")
+
+            while True:
+                try:
+                    user_input = input("\nEnter choice (1-3): ").strip()
+                    if user_input in ['1', '2', '3']:
+                        return int(user_input) - 1
+                    elif user_input == '':
+                        # Default to option 1 on empty input
+                        return 0
+                    console.print("[red]Please enter 1, 2, or 3 (or press Enter for default)[/red]")
+                except (KeyboardInterrupt, EOFError):
+                    console.print("\n[yellow]Operation cancelled by user[/yellow]")
+                    return -1
 
     def _execute_conflict_resolution(
         self,

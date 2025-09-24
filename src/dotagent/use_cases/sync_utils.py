@@ -139,7 +139,7 @@ class SyncContextManager:
             origin_url = origin.url
 
             # Normalize both URLs for comparison
-            from dotagent.core.config_manager import ConfigManager
+            from dotagent.application.config_manager import ConfigManager
 
             config_manager = ConfigManager()
             normalized_origin = config_manager._normalize_repository_url(origin_url)

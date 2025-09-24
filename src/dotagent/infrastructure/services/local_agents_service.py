@@ -1,9 +1,7 @@
 """Service for handling local-agents file selection and processing."""
 
 from pathlib import Path
-from typing import List
 
-import inquirer
 from rich.console import Console
 
 
@@ -15,7 +13,7 @@ class LocalAgentsService:
 
     def select_agent_files(
         self, local_agents_path: Path, force: bool = False
-    ) -> List[Path]:
+    ) -> list[Path]:
         """
         Prompt user to select which agent files to sync.
 
@@ -52,26 +50,31 @@ class LocalAgentsService:
         if not choices:
             return []
 
-        # Show interactive selection
+        # Show interactive selection using simple prompts
         self.console.print("\n[bold blue]Select agent files to sync:[/bold blue]")
-        self.console.print("[dim]Use space to select/deselect, enter to confirm[/dim]")
+        self.console.print("[dim]Enter file numbers separated by spaces (e.g. '1 3 5') or 'all' for all files[/dim]")
 
-        questions = [
-            inquirer.Checkbox(
-                "selected_files",
-                message="Select agent files",
-                choices=choices,
-                default=[],  # No files pre-selected by default
-            )
-        ]
+        # Display numbered choices
+        for i, choice in enumerate(choices, 1):
+            self.console.print(f"  [cyan]{i}.[/cyan] {choice}")
 
         try:
-            answers = inquirer.prompt(questions)
-            if answers is None:  # User cancelled
-                self.console.print("[yellow]Agent file selection cancelled[/yellow]")
+            user_input = input("\nEnter your selection: ").strip()
+
+            if not user_input:
+                self.console.print("[yellow]No agent files selected[/yellow]")
                 return []
 
-            selected_choice_texts = answers.get("selected_files", [])
+            if user_input.lower() == 'all':
+                selected_choice_texts = choices
+            else:
+                # Parse space-separated numbers
+                try:
+                    indices = [int(x) for x in user_input.split()]
+                    selected_choice_texts = [choices[i-1] for i in indices if 1 <= i <= len(choices)]
+                except (ValueError, IndexError):
+                    self.console.print("[red]Invalid selection. Please enter valid numbers.[/red]")
+                    return []
 
             if not selected_choice_texts:
                 self.console.print("[yellow]No agent files selected[/yellow]")
@@ -83,12 +86,12 @@ class LocalAgentsService:
             ]
             return selected_files
 
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             self.console.print("\n[yellow]Agent file selection cancelled[/yellow]")
             return []
 
     def copy_selected_files(
-        self, source_dir: Path, target_dir: Path, selected_files: List[Path]
+        self, source_dir: Path, target_dir: Path, selected_files: list[Path]
     ) -> int:
         """
         Copy selected agent files from source to target directory.
