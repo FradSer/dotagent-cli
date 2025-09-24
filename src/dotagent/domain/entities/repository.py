@@ -37,6 +37,7 @@ class Repository:
             from ...infrastructure.validators.branch_validator import (
                 BranchNameValidator,
             )
+
             BranchNameValidator().validate(self.branch)
         except Exception:
             validation_errors.append(f"Invalid branch name: {self.branch}")
@@ -57,7 +58,6 @@ class Repository:
             return False
         except Exception:
             return False
-
 
     @property
     def is_github(self) -> bool:

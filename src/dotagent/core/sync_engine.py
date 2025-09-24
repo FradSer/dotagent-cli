@@ -4,13 +4,13 @@ from datetime import datetime
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from dotclaude.core.config_manager import ConfigManager
-from dotclaude.core.git_manager import GitManager
-from dotclaude.core.strategy_factory import StrategyFactory
-from dotclaude.core.sync_utils import SyncContextManager
-from dotclaude.domain.constants import DefaultPaths, SyncItems
-from dotclaude.domain.value_objects import SyncOptions, SyncResult
-from dotclaude.utils.console import console
+from dotagent.core.config_manager import ConfigManager
+from dotagent.core.git_manager import GitManager
+from dotagent.core.strategy_factory import StrategyFactory
+from dotagent.core.sync_utils import SyncContextManager
+from dotagent.domain.constants import DefaultPaths, SyncItems
+from dotagent.domain.value_objects import SyncOptions, SyncResult
+from dotagent.utils.console import console
 
 
 class SyncEngine:
@@ -27,7 +27,9 @@ class SyncEngine:
         start_time = datetime.now()
 
         # Get effective repository URL with proper precedence
-        repo_url = self.config_manager.get_effective_repository_url(options.repository_url)
+        repo_url = self.config_manager.get_effective_repository_url(
+            options.repository_url
+        )
 
         try:
             with Progress(
@@ -51,7 +53,9 @@ class SyncEngine:
                     self.git_manager, self.sync_items, self.claude_dir
                 )
                 operation_type, strategy = strategy_factory.create_strategy(options)
-                progress.update(task, description="Strategy initialized", completed=True)
+                progress.update(
+                    task, description="Strategy initialized", completed=True
+                )
 
             # Execute the strategy outside progress context for interactive prompts
             operations = strategy.execute(working_dir, options)
@@ -83,4 +87,3 @@ class SyncEngine:
                 branch=getattr(options, "branch", "main"),
                 dry_run=getattr(options, "dry_run", False),
             )
-

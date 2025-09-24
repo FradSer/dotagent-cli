@@ -4,7 +4,7 @@ import filecmp
 import shutil
 from pathlib import Path
 
-from dotclaude.domain.constants import Git, Performance
+from dotagent.domain.constants import Git, Performance
 
 
 class SyncFileOperations:
@@ -97,7 +97,7 @@ class SyncContextManager:
         """Initialize the sync context and return working directory."""
         import tempfile
 
-        from dotclaude.utils.console import console
+        from dotagent.utils.console import console
 
         # Check if we're already in the dotclaude repository
         current_dir = Path.cwd()
@@ -139,7 +139,8 @@ class SyncContextManager:
             origin_url = origin.url
 
             # Normalize both URLs for comparison
-            from dotclaude.core.config_manager import ConfigManager
+            from dotagent.core.config_manager import ConfigManager
+
             config_manager = ConfigManager()
             normalized_origin = config_manager._normalize_repository_url(origin_url)
             normalized_target = config_manager._normalize_repository_url(self.repo_url)

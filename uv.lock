@@ -250,7 +250,7 @@ wheels = [
 ]
 
 [[package]]
-name = "dotclaude"
+name = "dotagent"
 version = "0.1.1"
 source = { editable = "." }
 dependencies = [

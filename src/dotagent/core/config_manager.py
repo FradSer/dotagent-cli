@@ -8,8 +8,8 @@ from typing import Any, Optional
 
 from ruamel.yaml import YAML
 
-from dotclaude.domain.constants import YAMLConfig
-from dotclaude.utils.console import console
+from dotagent.domain.constants import YAMLConfig
+from dotagent.utils.console import console
 
 # Constants for URL processing
 SSH_GITHUB_PREFIX = "git@github.com:"
@@ -213,7 +213,8 @@ class ConfigManager:
         """Get nested value using dot notation with improved error handling."""
         try:
             from functools import reduce
-            return reduce(dict.get, key.split('.'), config)
+
+            return reduce(dict.get, key.split("."), config)
         except (AttributeError, TypeError):
             return None
 

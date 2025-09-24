@@ -55,7 +55,9 @@ class SyncUseCase:
         except Exception as e:
             return self._create_failure_result(options, start_time, e)
 
-    def _execute_with_error_handling(self, options: SyncOptions, start_time: datetime) -> SyncResult:
+    def _execute_with_error_handling(
+        self, options: SyncOptions, start_time: datetime
+    ) -> SyncResult:
         """Execute sync with proper setup and validation."""
         self._logger.info(f"Starting {options.operation_type} operation")
         self._print_operation_header(options)
@@ -87,11 +89,17 @@ class SyncUseCase:
     def _print_operation_header(self, options: SyncOptions) -> None:
         """Print appropriate header message for the operation."""
         if options.dry_run:
-            self._console.print(f"[bold blue]Preview: {options.operation_type}[/bold blue]")
+            self._console.print(
+                f"[bold blue]Preview: {options.operation_type}[/bold blue]"
+            )
         else:
-            self._console.print(f"[bold blue]Starting {options.operation_type}...[/bold blue]")
+            self._console.print(
+                f"[bold blue]Starting {options.operation_type}...[/bold blue]"
+            )
 
-    def _create_failure_result(self, options: SyncOptions, start_time: datetime, error: Exception) -> SyncResult:
+    def _create_failure_result(
+        self, options: SyncOptions, start_time: datetime, error: Exception
+    ) -> SyncResult:
         """Create a failure result with proper error handling."""
         end_time = datetime.now()
         self._logger.error(f"Sync operation failed: {error}")
@@ -251,7 +259,9 @@ class SyncUseCase:
         self, item: SyncItem, status, options: SyncOptions
     ) -> Optional[str]:
         """Resolve version conflicts (local/remote newer)."""
-        conflict_type = "local_newer" if status.name == "LOCAL_NEWER" else "remote_newer"
+        conflict_type = (
+            "local_newer" if status.name == "LOCAL_NEWER" else "remote_newer"
+        )
 
         if options.conflict_resolution == ConflictResolution.LOCAL:
             return "push"

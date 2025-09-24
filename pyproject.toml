@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "dotclaude"
+name = "dotagent"
 version = "0.1.1"
-description = "Modern CLI tool for managing Claude Code configuration"
+description = "Universal CLI tool for managing AI agent configurations across different platforms"
 authors = [{name = "FradSer", email = "frad@frad.io"}]
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
-keywords = ["claude", "ai", "configuration", "sync", "agents"]
+keywords = ["claude", "ai", "configuration", "sync", "agents", "copilot", "cursor"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -50,7 +50,7 @@ dev = [
 ]
 
 [project.scripts]
-dotclaude = "dotclaude.cli:app"
+dotagent = "dotagent.cli:app"
 
 [tool.uv]
 dev-dependencies = [
@@ -71,7 +71,7 @@ Documentation = "https://github.com/FradSer/dotclaude"
 "Bug Tracker" = "https://github.com/FradSer/dotclaude/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/dotclaude"]
+packages = ["src/dotagent"]
 
 [tool.black]
 target-version = ['py39']
@@ -134,7 +134,7 @@ warn_unused_ignores = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --strict-markers --cov=dotclaude --cov-report=term-missing --cov-report=xml"
+addopts = "-ra -q --strict-markers --cov=dotagent --cov-report=term-missing --cov-report=xml"
 testpaths = ["tests"]
 markers = [
     "unit: Unit tests",
@@ -143,7 +143,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["src/dotclaude"]
+source = ["src/dotagent"]
 omit = [
     "*/tests/*",
     "*/__pycache__/*",

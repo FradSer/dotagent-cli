@@ -5,9 +5,9 @@ from typing import Any, Callable, Optional
 
 import typer
 
-from dotclaude.core.config_manager import ConfigScope
-from dotclaude.infrastructure.services.console_service import RichConsoleService
-from dotclaude.utils.console import create_console
+from dotagent.core.config_manager import ConfigScope
+from dotagent.infrastructure.services.console_service import RichConsoleService
+from dotagent.utils.console import create_console
 
 console = create_console()
 console_service = RichConsoleService()
@@ -96,7 +96,7 @@ def with_config_manager(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
-        from dotclaude.core.config_manager import ConfigManager
+        from dotagent.core.config_manager import ConfigManager
 
         kwargs["manager"] = ConfigManager()
         return func(*args, **kwargs)

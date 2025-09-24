@@ -4,12 +4,12 @@ import os
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from dotclaude.core.git_manager import GitManager
-from dotclaude.domain.constants import Git
-from dotclaude.domain.value_objects import ConflictResolution, SyncOptions
-from dotclaude.domain.value_objects.sync_result import OperationResult, OperationStatus
-from dotclaude.infrastructure.services.interactive_service import InteractiveSyncService
-from dotclaude.utils.console import console
+from dotagent.core.git_manager import GitManager
+from dotagent.domain.constants import Git
+from dotagent.domain.value_objects import ConflictResolution, SyncOptions
+from dotagent.domain.value_objects.sync_result import OperationResult, OperationStatus
+from dotagent.infrastructure.services.interactive_service import InteractiveSyncService
+from dotagent.utils.console import console
 
 
 class SyncStrategy(ABC):
@@ -57,20 +57,32 @@ class SyncStrategy(ABC):
         dest_path: Path,
         is_dir: bool,
         operation_type: str,
-        options: SyncOptions
+        options: SyncOptions,
     ) -> OperationResult:
         """Execute a file operation (create or update) with unified logic."""
-        from dotclaude.core.sync_utils import SyncFileOperations
+        from dotagent.core.sync_utils import SyncFileOperations
 
         file_ops = SyncFileOperations()
 
         if not dest_path.exists():
             return self._handle_create_operation(
-                item_name, source_path, dest_path, is_dir, operation_type, options, file_ops
+                item_name,
+                source_path,
+                dest_path,
+                is_dir,
+                operation_type,
+                options,
+                file_ops,
             )
         elif not file_ops.paths_identical(source_path, dest_path, is_dir):
             return self._handle_update_operation(
-                item_name, source_path, dest_path, is_dir, operation_type, options, file_ops
+                item_name,
+                source_path,
+                dest_path,
+                is_dir,
+                operation_type,
+                options,
+                file_ops,
             )
 
         # No changes needed
@@ -86,11 +98,13 @@ class SyncStrategy(ABC):
         is_dir: bool,
         operation_type: str,
         options: SyncOptions,
-        file_ops
+        file_ops,
     ) -> OperationResult:
         """Handle file creation operation."""
         if options.dry_run:
-            return self._handle_dry_run_operation(item_name, "create", f"create {operation_type}")
+            return self._handle_dry_run_operation(
+                item_name, "create", f"create {operation_type}"
+            )
 
         console.print(f"[success]Creating {operation_type}: {item_name}[/success]")
         file_ops.copy_path(source_path, dest_path, is_dir)
@@ -106,11 +120,13 @@ class SyncStrategy(ABC):
         is_dir: bool,
         operation_type: str,
         options: SyncOptions,
-        file_ops
+        file_ops,
     ) -> OperationResult:
         """Handle file update operation."""
         if options.dry_run:
-            return self._handle_dry_run_operation(item_name, "update", f"update {operation_type}")
+            return self._handle_dry_run_operation(
+                item_name, "update", f"update {operation_type}"
+            )
 
         if options.force or self._prompt_overwrite(f"{item_name} {operation_type}"):
             console.print(f"[success]Updating {operation_type}: {item_name}[/success]")
@@ -148,9 +164,13 @@ class SyncStrategy(ABC):
 
         return filtered_items
 
-    def _process_local_agents_item(self, working_dir: Path, options: SyncOptions) -> OperationResult:
+    def _process_local_agents_item(
+        self, working_dir: Path, options: SyncOptions
+    ) -> OperationResult:
         """Process local-agents item: remote/local-agents/ -> .claude/agents/ with file selection"""
-        from dotclaude.infrastructure.services.local_agents_service import LocalAgentsService
+        from dotagent.infrastructure.services.local_agents_service import (
+            LocalAgentsService,
+        )
 
         remote_local_agents = working_dir / "local-agents"
         project_agents = Path.cwd() / ".claude" / "agents"
@@ -164,17 +184,24 @@ class SyncStrategy(ABC):
         md_files = list(remote_local_agents.glob("*.md"))
         if not md_files:
             return self._create_operation_result(
-                "local-agents", "skip", True, "No .md files found in remote local-agents"
+                "local-agents",
+                "skip",
+                True,
+                "No .md files found in remote local-agents",
             )
 
         if options.dry_run:
             return self._handle_dry_run_operation(
-                "local-agents", "copy_to_local", f"would process {len(md_files)} agent files"
+                "local-agents",
+                "copy_to_local",
+                f"would process {len(md_files)} agent files",
             )
 
         # Use LocalAgentsService for file selection
         agents_service = LocalAgentsService()
-        selected_files = agents_service.select_agent_files(remote_local_agents, options.force)
+        selected_files = agents_service.select_agent_files(
+            remote_local_agents, options.force
+        )
 
         if not selected_files:
             return self._create_operation_result(
@@ -188,7 +215,10 @@ class SyncStrategy(ABC):
 
         if copied_count > 0:
             return self._create_operation_result(
-                "local-agents", "copy_to_local", True, f"Copied {copied_count} agent file(s)"
+                "local-agents",
+                "copy_to_local",
+                True,
+                f"Copied {copied_count} agent file(s)",
             )
         else:
             return self._create_operation_result(
@@ -261,15 +291,21 @@ class PushSyncStrategy(SyncStrategy):
 
         # Commit and push changes if there are any
         if changes_made > 0 and not options.dry_run:
-            console.print(f"[info]Pushing {changes_made} changes to remote repository...[/info]")
+            console.print(
+                f"[info]Pushing {changes_made} changes to remote repository...[/info]"
+            )
             try:
                 self.git_manager.stage_all_changes()
                 self.git_manager.create_commit(Git.COMMIT_MESSAGES["sync"])
                 self.git_manager.push_changes(options.branch)
-                console.print("[success]Successfully pushed changes to remote repository[/success]")
+                console.print(
+                    "[success]Successfully pushed changes to remote repository[/success]"
+                )
             except Exception as e:
                 console.print(f"[warning]Git operations failed: {e}[/warning]")
-                console.print("[info]Local changes have been made but not pushed to remote[/info]")
+                console.print(
+                    "[info]Local changes have been made but not pushed to remote[/info]"
+                )
 
         return operations
 
@@ -318,15 +354,21 @@ class BidirectionalSyncStrategy(SyncStrategy):
 
         # Commit and push if there are changes that need to be pushed to remote
         if changes_made > 0 and not options.dry_run:
-            console.print(f"[info]Pushing {changes_made} changes to remote repository...[/info]")
+            console.print(
+                f"[info]Pushing {changes_made} changes to remote repository...[/info]"
+            )
             try:
                 self.git_manager.stage_all_changes()
                 self.git_manager.create_commit(Git.COMMIT_MESSAGES["bidirectional"])
                 self.git_manager.push_changes(options.branch)
-                console.print("[success]Successfully pushed changes to remote repository[/success]")
+                console.print(
+                    "[success]Successfully pushed changes to remote repository[/success]"
+                )
             except Exception as e:
                 console.print(f"[warning]Git operations failed: {e}[/warning]")
-                console.print("[info]Local changes have been made but not pushed to remote[/info]")
+                console.print(
+                    "[info]Local changes have been made but not pushed to remote[/info]"
+                )
 
         return operations
 
@@ -334,7 +376,7 @@ class BidirectionalSyncStrategy(SyncStrategy):
         self, working_dir: Path, item_name: str, item_type: str, options: SyncOptions
     ) -> OperationResult:
         """Process a single item for bidirectional operation."""
-        from dotclaude.core.sync_utils import SyncFileOperations
+        from dotagent.core.sync_utils import SyncFileOperations
 
         # Special handling for local-agents: remote/local-agents/ -> .claude/agents/
         if item_name == "local-agents":
@@ -381,9 +423,15 @@ class BidirectionalSyncStrategy(SyncStrategy):
             )
 
         if options.dry_run:
-            preference = "local" if options.conflict_resolution == ConflictResolution.LOCAL else "remote"
+            preference = (
+                "local"
+                if options.conflict_resolution == ConflictResolution.LOCAL
+                else "remote"
+            )
             return self._handle_dry_run_operation(
-                item_name, "resolve_conflict", f"resolve conflict (would use {preference} version)"
+                item_name,
+                "resolve_conflict",
+                f"resolve conflict (would use {preference} version)",
             )
 
         if options.force:
@@ -401,7 +449,10 @@ class BidirectionalSyncStrategy(SyncStrategy):
                 )
             else:
                 return self._create_operation_result(
-                    item_name, f"use_{choice}", True, f"Used {choice} version (interactive)"
+                    item_name,
+                    f"use_{choice}",
+                    True,
+                    f"Used {choice} version (interactive)",
                 )
 
     def _resolve_conflict_forced(
@@ -411,7 +462,7 @@ class BidirectionalSyncStrategy(SyncStrategy):
         remote_path: Path,
         is_dir: bool,
         options: SyncOptions,
-        file_ops
+        file_ops,
     ) -> OperationResult:
         """Resolve conflict using forced resolution strategy."""
         if options.conflict_resolution == ConflictResolution.LOCAL:
@@ -471,9 +522,13 @@ class BidirectionalSyncStrategy(SyncStrategy):
             item_name, "copy_to_local", True, "Copied to local successfully"
         )
 
-    def _display_conflict_info(self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool) -> None:
+    def _display_conflict_info(
+        self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool
+    ) -> None:
         """Display conflict information to the user."""
-        console.print(f"\n[bold yellow]WARNING: Conflict detected for: {item_name}[/bold yellow]")
+        console.print(
+            f"\n[bold yellow]WARNING: Conflict detected for: {item_name}[/bold yellow]"
+        )
         console.print("Both local and remote versions exist and are different.")
 
         if is_dir:
@@ -490,16 +545,16 @@ class BidirectionalSyncStrategy(SyncStrategy):
         choices = [
             "Use Local version (keep your changes)",
             "Use Remote version (use repository version)",
-            "Skip this item (leave both unchanged)"
+            "Skip this item (leave both unchanged)",
         ]
 
         try:
             questions = [
                 inquirer.List(
-                    'action',
+                    "action",
                     message=f"Choose action for {item_name}",
                     choices=choices,
-                    default=choices[0]
+                    default=choices[0],
                 ),
             ]
             answers = inquirer.prompt(questions)
@@ -507,13 +562,19 @@ class BidirectionalSyncStrategy(SyncStrategy):
             if answers is None:  # User pressed Ctrl+C
                 return -1  # Signal interruption
 
-            return choices.index(answers['action'])
+            return choices.index(answers["action"])
 
         except (EOFError, KeyboardInterrupt):
             return -1  # Signal interruption
 
     def _execute_conflict_resolution(
-        self, choice_index: int, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
+        self,
+        choice_index: int,
+        item_name: str,
+        local_path: Path,
+        remote_path: Path,
+        is_dir: bool,
+        file_ops,
     ) -> str:
         """Execute the chosen conflict resolution action."""
         if choice_index == -1:  # Interrupted
@@ -534,9 +595,16 @@ class BidirectionalSyncStrategy(SyncStrategy):
             return "skip"
 
     def _resolve_conflict_interactive(
-        self, item_name: str, local_path: Path, remote_path: Path, is_dir: bool, file_ops
+        self,
+        item_name: str,
+        local_path: Path,
+        remote_path: Path,
+        is_dir: bool,
+        file_ops,
     ) -> str:
         """Resolve conflict interactively with arrow key support."""
         self._display_conflict_info(item_name, local_path, remote_path, is_dir)
         choice_index = self._prompt_user_choice(item_name)
-        return self._execute_conflict_resolution(choice_index, item_name, local_path, remote_path, is_dir, file_ops)
+        return self._execute_conflict_resolution(
+            choice_index, item_name, local_path, remote_path, is_dir, file_ops
+        )
