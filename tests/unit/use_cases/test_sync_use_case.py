@@ -4,7 +4,7 @@ import pytest
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-from dotagent.use_cases.sync_use_case import SyncUseCase
+from dotagent.use_cases.sync import SyncUseCase
 from dotagent.domain.value_objects import SyncOptions, ConflictResolution
 from dotagent.domain.entities.sync_item import SyncStatus
 from dotagent.domain.exceptions import SyncValidationError

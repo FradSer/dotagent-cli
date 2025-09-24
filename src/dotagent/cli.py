@@ -1,14 +1,14 @@
 """Main CLI application using Typer."""
 
-from typing import Optional
 from collections import Counter
+from typing import Optional
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
 from dotagent import __version__
-from dotagent.core import SyncEngine
+from dotagent.application import SyncEngine
 from dotagent.domain import ConflictResolution, SyncOptions
 from dotagent.utils.console import create_console
 
@@ -285,7 +285,7 @@ def _display_sync_status_tables(result, target_branch: str) -> None:
     # Display global configuration status
     if global_items:
         rich_console.print(
-            f"\n[bold blue]Global Configuration[/bold blue] [dim](from ~/.claude/)[/dim]"
+            "\n[bold blue]Global Configuration[/bold blue] [dim](from ~/.claude/)[/dim]"
         )
         global_table = Table(show_header=True, header_style="bold magenta", box=None)
         global_table.add_column("Item", style="cyan", no_wrap=True)
@@ -300,7 +300,7 @@ def _display_sync_status_tables(result, target_branch: str) -> None:
     # Display local configuration status
     if local_items:
         rich_console.print(
-            f"\n[bold blue]Local Configuration[/bold blue] [dim](remote local-agents/ -> .claude/agents/)[/dim]"
+            "\n[bold blue]Local Configuration[/bold blue] [dim](remote local-agents/ -> .claude/agents/)[/dim]"
         )
         local_table = Table(show_header=True, header_style="bold magenta", box=None)
         local_table.add_column("Item", style="cyan", no_wrap=True)

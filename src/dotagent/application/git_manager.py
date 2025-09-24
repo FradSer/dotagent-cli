@@ -7,10 +7,11 @@ from typing import Optional
 from git import Repo
 from git.exc import GitCommandError, InvalidGitRepositoryError
 
+from dotagent.domain.interfaces import GitManagerInterface
 from dotagent.utils.console import console
 
 
-class GitManager:
+class GitManager(GitManagerInterface):
     """Manages Git operations for repository synchronization."""
 
     def __init__(self):

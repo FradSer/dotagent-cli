@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from dotagent.core.git_manager import GitManager
-from dotagent.core.sync_strategies import (
+from dotagent.domain.interfaces import GitManagerInterface
+from dotagent.domain.strategies import (
     BidirectionalSyncStrategy,
     PullSyncStrategy,
     PushSyncStrategy,
@@ -15,7 +15,7 @@ from dotagent.domain.value_objects import SyncOptions
 class StrategyFactory:
     """Factory for creating sync strategies based on options."""
 
-    def __init__(self, git_manager: GitManager, sync_items: list, claude_dir: Path):
+    def __init__(self, git_manager: GitManagerInterface, sync_items: list, claude_dir: Path):
         """Initialize the strategy factory.
 
         Args:

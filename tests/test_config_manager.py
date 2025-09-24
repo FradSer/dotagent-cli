@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from dotagent.core.config_manager import ConfigManager, ConfigScope
+from dotagent.application.config_manager import ConfigManager, ConfigScope
 
 
 @pytest.fixture

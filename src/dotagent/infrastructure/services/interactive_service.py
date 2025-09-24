@@ -1,6 +1,5 @@
 """Interactive service for user prompts and selections."""
 
-from typing import List, Tuple
 from pathlib import Path
 
 import inquirer
@@ -20,7 +19,7 @@ class InteractiveSyncService:
         working_dir: Path,
         force: bool = False,
         operation_type: str = "bidirectional",
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """
         Prompt user to select which sync items to process.
 
@@ -116,7 +115,7 @@ class InteractiveSyncService:
 
     def _get_all_available_items(
         self, working_dir: Path, operation_type: str = "bidirectional"
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """Get all available sync items based on operation type."""
         from pathlib import Path
 
