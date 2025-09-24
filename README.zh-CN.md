@@ -1,4 +1,4 @@
-# DotAgent CLI ![](https://img.shields.io/badge/A%20FRAD%20PRODUCT-WIP-yellow)
+# DotAgent CLI ![](https://img.shields.io/badge/A%20FRAD%20PRODUCT-green)
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/FradSer?style=social)](https://twitter.com/FradSer)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Configuration-blue.svg)](https://docs.anthropic.com/en/docs/claude-code)
