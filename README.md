@@ -1,10 +1,12 @@
-# DotAgent CLI
+# DotAgent CLI ![](https://img.shields.io/badge/A%20FRAD%20PRODUCT-WIP-yellow)
+
+[![Twitter Follow](https://img.shields.io/twitter/follow/FradSer?style=social)](https://twitter.com/FradSer)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Configuration-blue.svg)](https://docs.anthropic.com/en/docs/claude-code)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**English | [中文](README.zh-CN.md)**
 
 > Universal CLI tool for managing AI agent configurations across different platforms - currently supports Claude Code with planned support for GitHub Copilot, Cursor, and more
-
-[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Code Style](https://img.shields.io/badge/code%20style-black-black.svg)](https://github.com/psf/black)
 
 DotAgent is a universal CLI tool for managing AI agent configurations. Currently supports Claude Code with robust bidirectional synchronization between local (`~/.claude/`) and remote GitHub repositories. Future versions will add support for GitHub Copilot, Cursor, and other AI development tools.
 

@@ -1,10 +1,12 @@
-# DotAgent CLI
+# DotAgent CLI ![](https://img.shields.io/badge/A%20FRAD%20PRODUCT-WIP-yellow)
+
+[![Twitter Follow](https://img.shields.io/twitter/follow/FradSer?style=social)](https://twitter.com/FradSer)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Configuration-blue.svg)](https://docs.anthropic.com/en/docs/claude-code)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**[English](README.md) | 中文**
 
 > 跨不同平台管理 AI 智能体配置的通用 CLI 工具 - 目前支持 Claude Code，计划支持 GitHub Copilot、Cursor 等
-
-[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Code Style](https://img.shields.io/badge/code%20style-black-black.svg)](https://github.com/psf/black)
 
 DotAgent 是一个用于管理 AI 智能体配置的通用 CLI 工具。目前完全支持 Claude Code，在本地（`~/.claude/`）和远程 GitHub 仓库之间提供强大的双向同步功能。未来版本将增加对 GitHub Copilot、Cursor 和其他 AI 开发工具的支持。
 
