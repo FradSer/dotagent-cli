@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DotClaude is a modern CLI tool for managing Claude Code configuration with sync capabilities. It provides a simplified, focused interface for synchronizing configurations between local and remote repositories.
+DotAgent is a universal CLI tool for managing AI agent configurations across different platforms. It provides a simplified, focused interface for synchronizing configurations between local and remote repositories.
 
 ## Development Commands
 
@@ -53,27 +53,27 @@ black src tests && ruff check src tests && mypy src
 ### Development and Testing
 ```bash
 # Run CLI in development mode
-uv run dotclaude --help
+uv run dotagent --help
 
 # Test core commands
-uv run dotclaude status
-uv run dotclaude sync --dry-run
-uv run dotclaude status --branch develop
+uv run dotagent claude status
+uv run dotagent claude sync --dry-run
+uv run dotagent claude status --branch develop
 
 # Test with custom repository
-uv run dotclaude sync --repo user/repo --dry-run
-uv run dotclaude status --repo https://github.com/user/repo.git
+uv run dotagent claude sync --repo user/repo --dry-run
+uv run dotagent claude status --repo https://github.com/user/repo.git
 
 # Test with local agents
-uv run dotclaude sync --local --dry-run
-uv run dotclaude sync --local --force
+uv run dotagent claude sync --local --dry-run
+uv run dotagent claude sync --local --force
 
 # Test conflict resolution (create local differences first)
 echo "# Local test" > ~/.claude/CLAUDE.md
-uv run dotclaude sync --branch develop
+uv run dotagent claude sync --branch develop
 
 # Test combined flags
-uv run dotclaude sync --local --branch develop --repo user/repo
+uv run dotagent claude sync --local --branch develop --repo user/repo
 ```
 
 ### Build and Package
@@ -91,8 +91,8 @@ The CLI has been simplified to focus on core sync functionality with only **two 
 
 ### Command Structure
 ```bash
-dotclaude sync     # Interactive sync with conflict resolution
-dotclaude status   # Show sync status and differences
+dotagent claude sync     # Interactive sync with conflict resolution
+dotagent claude status   # Show sync status and differences
 ```
 
 ### Unified Global Flags

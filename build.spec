@@ -3,12 +3,12 @@
 block_cipher = None
 
 a = Analysis(
-    ['src/dotclaude/cli.py'],
+    ['src/dotagent/cli.py'],
     pathex=[],
     binaries=[],
     datas=[],
     hiddenimports=[
-        'dotclaude',
+        'dotagent',
         'typer',
         'rich',
         'git',
@@ -35,7 +35,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='dotclaude',
+    name='dotagent',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
