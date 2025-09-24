@@ -8,8 +8,8 @@ from rich.console import Console
 from rich.table import Table
 
 from dotagent import __version__
-from dotagent.core.sync_engine import SyncEngine
-from dotagent.domain.value_objects import ConflictResolution, SyncOptions
+from dotagent.core import SyncEngine
+from dotagent.domain import ConflictResolution, SyncOptions
 from dotagent.utils.console import create_console
 
 console = Console()
