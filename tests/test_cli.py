@@ -20,7 +20,7 @@ def test_cli_help():
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
     assert "dotagent" in result.stdout
-    assert "Sync configuration" in result.stdout
+    assert "claude" in result.stdout
 
 
 def test_claude_sync_help():
