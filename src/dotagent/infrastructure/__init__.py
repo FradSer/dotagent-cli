@@ -1,13 +1,7 @@
-"""Infrastructure implementations for dotclaude application."""
+"""Infrastructure implementations for dotagent application."""
 
-from .services import (
-    RichConsoleService,
-    SecurityServiceImpl,
-    ValidationServiceImpl,
-)
+from .services import InteractiveSyncService
 
 __all__ = [
-    "RichConsoleService",
-    "SecurityServiceImpl",
-    "ValidationServiceImpl",
+    "InteractiveSyncService",
 ]

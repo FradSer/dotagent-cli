@@ -11,7 +11,7 @@ def test_cli_version():
     runner = CliRunner()
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "dotclaude version" in result.stdout
+    assert "dotagent version" in result.stdout
 
 
 def test_cli_help():
@@ -19,29 +19,21 @@ def test_cli_help():
     runner = CliRunner()
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
-    assert "dotclaude" in result.stdout
+    assert "dotagent" in result.stdout
     assert "Sync configuration" in result.stdout
 
 
-def test_sync_help():
-    """Test sync command help."""
+def test_claude_sync_help():
+    """Test claude sync command help."""
     runner = CliRunner()
-    result = runner.invoke(app, ["sync", "--help"])
+    result = runner.invoke(app, ["claude", "sync", "--help"])
     assert result.exit_code == 0
     assert "Sync configuration" in result.stdout
 
 
-def test_agent_help():
-    """Test agent command help."""
+def test_claude_status_help():
+    """Test claude status command help."""
     runner = CliRunner()
-    result = runner.invoke(app, ["agent", "--help"])
+    result = runner.invoke(app, ["claude", "status", "--help"])
     assert result.exit_code == 0
-    assert "Manage AI agents" in result.stdout
-
-
-def test_config_help():
-    """Test config command help."""
-    runner = CliRunner()
-    result = runner.invoke(app, ["config", "--help"])
-    assert result.exit_code == 0
-    assert "Manage configuration" in result.stdout
+    assert "Show sync status" in result.stdout
