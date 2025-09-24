@@ -250,8 +250,8 @@ wheels = [
 ]
 
 [[package]]
-name = "dotagent"
-version = "0.1.1"
+name = "dotclaude-cli"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
