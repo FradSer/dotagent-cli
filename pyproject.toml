@@ -66,10 +66,10 @@ dev-dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/FradSer/dotclaude-cli"
-Repository = "https://github.com/FradSer/dotclaude-cli"
-Documentation = "https://github.com/FradSer/dotclaude-cli"
-"Bug Tracker" = "https://github.com/FradSer/dotclaude-cli/issues"
+Homepage = "https://github.com/FradSer/dotagent-cli"
+Repository = "https://github.com/FradSer/dotagent-cli"
+Documentation = "https://github.com/FradSer/dotagent-cli"
+"Bug Tracker" = "https://github.com/FradSer/dotagent-cli/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dotagent"]

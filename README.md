@@ -29,8 +29,8 @@ uv tool install dotclaude-cli
 
 ### Development Installation
 ```bash
-git clone https://github.com/FradSer/dotclaude-cli.git
-cd dotclaude-cli
+git clone https://github.com/FradSer/dotagent-cli.git
+cd dotagent-cli
 uv venv && source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
@@ -146,7 +146,7 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ## Links
 
-- [Tool Repository](https://github.com/FradSer/dotclaude-cli) - This CLI tool
+- [Tool Repository](https://github.com/FradSer/dotagent-cli) - This CLI tool
 - [Default Config Repository](https://github.com/FradSer/dotclaude) - Fork this for your configs
-- [Issues](https://github.com/FradSer/dotclaude-cli/issues)
+- [Issues](https://github.com/FradSer/dotagent-cli/issues)
 - [Claude Code Documentation](https://docs.anthropic.com/claude/docs)

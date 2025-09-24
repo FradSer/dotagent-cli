@@ -29,8 +29,8 @@ uv tool install dotclaude-cli
 
 ### 开发环境安装
 ```bash
-git clone https://github.com/FradSer/dotclaude-cli.git
-cd dotclaude-cli
+git clone https://github.com/FradSer/dotagent-cli.git
+cd dotagent-cli
 uv venv && source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
@@ -146,7 +146,7 @@ MIT 许可证 - 查看 [LICENSE](LICENSE) 文件。
 
 ## 链接
 
-- [工具仓库](https://github.com/FradSer/dotclaude-cli) - 此 CLI 工具
+- [工具仓库](https://github.com/FradSer/dotagent-cli) - 此 CLI 工具
 - [默认配置仓库](https://github.com/FradSer/dotclaude) - Fork 此仓库来存储你的配置
-- [问题反馈](https://github.com/FradSer/dotclaude-cli/issues)
+- [问题反馈](https://github.com/FradSer/dotagent-cli/issues)
 - [Claude Code 文档](https://docs.anthropic.com/claude/docs)
