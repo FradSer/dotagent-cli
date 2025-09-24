@@ -1,23 +1,30 @@
-# DotClaude CLI
+# DotAgent CLI
 
-> Sync Claude Code configurations between local and remote repositories
+> Universal CLI tool for managing AI agent configurations across different platforms - currently supports Claude Code with planned support for GitHub Copilot, Cursor, and more
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-black.svg)](https://github.com/psf/black)
 
-DotClaude syncs your Claude Code configurations (agents, commands, CLAUDE.md) between `~/.claude/` and GitHub repositories. By default, it syncs with [github.com/FradSer/dotclaude](https://github.com/FradSer/dotclaude), but you can specify your own repository. Project-specific agents can be selectively synced to `.claude/agents/`.
+DotAgent is a universal CLI tool for managing AI agent configurations. Currently supports Claude Code with robust bidirectional synchronization between local (`~/.claude/`) and remote GitHub repositories. Future versions will add support for GitHub Copilot, Cursor, and other AI development tools.
+
+## 🎯 Current Support
+
+**Claude Code** - Full synchronization support:
+- Agents, commands, and CLAUDE.md configuration files
+- Bidirectional sync with intelligent conflict resolution
+- Project-specific agent management
 
 ## Installation
 
 ### Via pip (recommended)
 ```bash
-pip install dotclaude
+pip install dotagent
 ```
 
 ### Via uv
 ```bash
-uv tool install dotclaude
+uv tool install dotagent
 ```
 
 ### Development Installation
@@ -49,30 +56,30 @@ dotclaude sync  # Uses github.com/FradSer/dotclaude
 ### Basic Commands
 
 ```bash
-# Sync global configurations
-dotclaude sync
+# Sync global Claude configurations
+dotagent claude sync
 
 # Check sync status
-dotclaude status
+dotagent claude status
 
 # Include project-specific agents
-dotclaude sync --local
+dotagent claude sync --local
 ```
 
 ### Repository Options
 
 ```bash
 # Use custom repository
-dotclaude sync --repo user/repo
+dotagent claude sync --repo user/repo
 
 # Use specific branch
-dotclaude sync --branch develop
+dotagent claude sync --branch develop
 
 # Preview changes
-dotclaude sync --dry-run
+dotagent claude sync --dry-run
 
 # Force overwrite conflicts
-dotclaude sync --force
+dotagent claude sync --force
 ```
 
 ### What Gets Synced
@@ -98,17 +105,17 @@ All these formats work:
 
 ```bash
 # Basic sync
-dotclaude sync
+dotagent claude sync
 
 # Sync with project agents
-dotclaude sync --local
+dotagent claude sync --local
 
 # Use custom repo and branch
-dotclaude sync --repo company/configs --branch main --local
+dotagent claude sync --repo company/configs --branch main --local
 
 # Check what would change
-dotclaude status
-dotclaude sync --dry-run
+dotagent claude status
+dotagent claude sync --dry-run
 ```
 
 ## Development

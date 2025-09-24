@@ -1,23 +1,30 @@
-# DotClaude CLI
+# DotAgent CLI
 
-> 在本地和远程仓库之间同步 Claude Code 配置
+> 跨不同平台管理 AI 智能体配置的通用 CLI 工具 - 目前支持 Claude Code，计划支持 GitHub Copilot、Cursor 等
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-black.svg)](https://github.com/psf/black)
 
-DotClaude 在 `~/.claude/` 和 GitHub 仓库之间同步你的 Claude Code 配置（agents、commands、CLAUDE.md）。默认同步 [github.com/FradSer/dotclaude](https://github.com/FradSer/dotclaude)，但你可以指定自己的仓库。项目特定的 agents 可以选择性地同步到 `.claude/agents/`。
+DotAgent 是一个用于管理 AI 智能体配置的通用 CLI 工具。目前完全支持 Claude Code，在本地（`~/.claude/`）和远程 GitHub 仓库之间提供强大的双向同步功能。未来版本将增加对 GitHub Copilot、Cursor 和其他 AI 开发工具的支持。
+
+## 🎯 当前支持
+
+**Claude Code** - 完整同步支持：
+- Agents、commands 和 CLAUDE.md 配置文件
+- 带智能冲突解决的双向同步
+- 项目特定智能体管理
 
 ## 安装
 
 ### 通过 pip 安装（推荐）
 ```bash
-pip install dotclaude
+pip install dotagent
 ```
 
 ### 通过 uv 安装
 ```bash
-uv tool install dotclaude
+uv tool install dotagent
 ```
 
 ### 开发环境安装
@@ -49,30 +56,30 @@ dotclaude sync  # 使用 github.com/FradSer/dotclaude
 ### 基本命令
 
 ```bash
-# 同步全局配置
-dotclaude sync
+# 同步全局 Claude 配置
+dotagent claude sync
 
 # 检查同步状态
-dotclaude status
+dotagent claude status
 
 # 包含项目特定 agents
-dotclaude sync --local
+dotagent claude sync --local
 ```
 
 ### 仓库选项
 
 ```bash
 # 使用自定义仓库
-dotclaude sync --repo user/repo
+dotagent claude sync --repo user/repo
 
 # 使用特定分支
-dotclaude sync --branch develop
+dotagent claude sync --branch develop
 
 # 预览变更
-dotclaude sync --dry-run
+dotagent claude sync --dry-run
 
 # 强制覆写冲突
-dotclaude sync --force
+dotagent claude sync --force
 ```
 
 ### 同步内容
@@ -98,17 +105,17 @@ dotclaude sync --force
 
 ```bash
 # 基础同步
-dotclaude sync
+dotagent claude sync
 
 # 同步项目 agents
-dotclaude sync --local
+dotagent claude sync --local
 
 # 使用自定义仓库和分支
-dotclaude sync --repo company/configs --branch main --local
+dotagent claude sync --repo company/configs --branch main --local
 
 # 检查将要变更的内容
-dotclaude status
-dotclaude sync --dry-run
+dotagent claude status
+dotagent claude sync --dry-run
 ```
 
 ## 开发
