@@ -21,12 +21,12 @@ DotAgent is a universal CLI tool for managing AI agent configurations. Currently
 
 ### Via pip (recommended)
 ```bash
-pip install dotclaude-cli
+pip install dotagent-cli
 ```
 
 ### Via uv
 ```bash
-uv tool install dotclaude-cli
+uv tool install dotagent-cli
 ```
 
 ### Development Installation

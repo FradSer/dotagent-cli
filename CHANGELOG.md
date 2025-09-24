@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated package name from `dotagent` to `dotclaude-cli` for PyPI publication
+- Updated package name from `dotagent` to `dotagent-cli` for PyPI publication
 - Rebranded to "Universal AI Agent Configuration Tool"
 - Updated repository URLs to match renamed GitHub repository (`dotagent-cli`)
 - Updated FRAD PRODUCT badge color to green
