@@ -19,12 +19,12 @@ DotAgent 是一个用于管理 AI 智能体配置的通用 CLI 工具。目前�
 
 ### 通过 pip 安装（推荐）
 ```bash
-pip install dotagent
+pip install dotclaude-cli
 ```
 
 ### 通过 uv 安装
 ```bash
-uv tool install dotagent
+uv tool install dotclaude-cli
 ```
 
 ### 开发环境安装
@@ -37,18 +37,18 @@ uv pip install -e ".[dev]"
 
 ## 设置配置仓库
 
-使用 DotClaude 之前，你需要一个配置仓库：
+使用 DotAgent 之前，你需要一个配置仓库：
 
 1. **Fork 默认仓库**: https://github.com/FradSer/dotclaude
 2. **在 fork 的仓库中自定义你的配置**
 3. **同步时使用你的 fork**:
    ```bash
-   dotclaude sync --repo yourusername/dotclaude
+   dotagent claude sync --repo yourusername/dotclaude
    ```
 
 或直接使用默认仓库：
 ```bash
-dotclaude sync  # 使用 github.com/FradSer/dotclaude
+dotagent claude sync  # 使用 github.com/FradSer/dotclaude
 ```
 
 ## 使用

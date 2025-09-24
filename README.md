@@ -19,12 +19,12 @@ DotAgent is a universal CLI tool for managing AI agent configurations. Currently
 
 ### Via pip (recommended)
 ```bash
-pip install dotagent
+pip install dotclaude-cli
 ```
 
 ### Via uv
 ```bash
-uv tool install dotagent
+uv tool install dotclaude-cli
 ```
 
 ### Development Installation
@@ -37,18 +37,18 @@ uv pip install -e ".[dev]"
 
 ## Setup Configuration Repository
 
-Before using DotClaude, you need a configuration repository:
+Before using DotAgent, you need a configuration repository:
 
 1. **Fork the default repository**: https://github.com/FradSer/dotclaude
 2. **Customize your configurations** in the forked repository
 3. **Use your fork** when syncing:
    ```bash
-   dotclaude sync --repo yourusername/dotclaude
+   dotagent claude sync --repo yourusername/dotclaude
    ```
 
 Or use the default repository directly:
 ```bash
-dotclaude sync  # Uses github.com/FradSer/dotclaude
+dotagent claude sync  # Uses github.com/FradSer/dotclaude
 ```
 
 ## Usage

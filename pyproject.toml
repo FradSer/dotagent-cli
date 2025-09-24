@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "dotagent"
+name = "dotclaude-cli"
 version = "0.1.1"
 description = "Universal CLI tool for managing AI agent configurations across different platforms"
 authors = [{name = "FradSer", email = "frad@frad.io"}]
@@ -51,6 +51,7 @@ dev = [
 
 [project.scripts]
 dotagent = "dotagent.cli:app"
+dotclaude = "dotagent.cli:app"
 
 [tool.uv]
 dev-dependencies = [
@@ -65,10 +66,10 @@ dev-dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/FradSer/dotclaude"
-Repository = "https://github.com/FradSer/dotclaude"
-Documentation = "https://github.com/FradSer/dotclaude"
-"Bug Tracker" = "https://github.com/FradSer/dotclaude/issues"
+Homepage = "https://github.com/FradSer/dotclaude-cli"
+Repository = "https://github.com/FradSer/dotclaude-cli"
+Documentation = "https://github.com/FradSer/dotclaude-cli"
+"Bug Tracker" = "https://github.com/FradSer/dotclaude-cli/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dotagent"]
