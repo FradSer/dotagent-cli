@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-09-24
+
+### Added
+
+- Clean Architecture implementation with 4-layer structure
+- Domain layer with entities, value objects, and exceptions
+- Use Cases layer for business logic orchestration
+- Application layer for core services
+- Infrastructure layer for external service adapters
+- Dependency inversion with interfaces for GitManager and InteractiveService
+- Strategy pattern implementation for sync operations
+- SyncUseCase for centralized business logic
+- Domain-specific exceptions for better error handling
+- Immutable value objects for SyncOptions and SyncResult
+
+### Changed
+
+- Refactored core components to follow Clean Architecture principles
+- Moved sync strategies to domain layer
+- Extracted business logic into use cases
+- Improved separation of concerns
+- Updated import structure to follow dependency rule
+- Restored inquirer with arrow key navigation support
+
+### Fixed
+
+- Circular import issues by moving StrategyFactory to use cases layer
+- Module organization for better maintainability
+
 ## [0.1.3] - 2025-09-24
 
 ### Fixed
@@ -94,7 +123,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Problematic is_flag option from Typer configuration
 - Magic numbers replaced with named constants
 
-[unreleased]: https://github.com/FradSer/dotagent-cli/compare/v0.1.3...HEAD
+[unreleased]: https://github.com/FradSer/dotagent-cli/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/FradSer/dotagent-cli/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/FradSer/dotagent-cli/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/FradSer/dotagent-cli/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/FradSer/dotagent-cli/compare/v0.1.0...v0.1.1
